@@ -5,9 +5,9 @@
 
 ## Avance
 
-`██░░░░░░░░░░░░` 2/14 fases terminadas (14 %)
+`██▒░░░░░░░░░░░` 2/14 fases terminadas (14 %)
 
-**Fase actual:** Fase 03 · Dominio (⏳ sin empezar)
+**Fase actual:** Fase 03 · Dominio (🚧 en progreso)
 **Última actualización:** 2026-09-30
 **Ventana planificada:** semana 2 (5 – 11 oct 2026), compartida con Rutta. `v1.0.0` como tarde el **2026-10-11**.
 
@@ -17,7 +17,7 @@
 |---|---|---|---|---|---|---|
 | 01 | Andamiaje | `feat/fase-01-andamiaje` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 02 | Core | `feat/fase-02-core` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
-| 03 | Dominio | `feat/fase-03-dominio` | ⏳ Pendiente | — | — | — |
+| 03 | Dominio | `feat/fase-03-dominio` | 🚧 En progreso | 2026-09-30 | — | — |
 | 04 | Backend local | `feat/fase-04-backend-local` | ⏳ Pendiente | — | — | — |
 | 05 | Modo demo | `feat/fase-05-modo-demo` | ⏳ Pendiente | — | — | — |
 | 06 | Catálogo | `feat/fase-06-catalogo` | ⏳ Pendiente | — | — | — |
