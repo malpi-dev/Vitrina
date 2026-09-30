@@ -104,7 +104,7 @@ export default function RootLayout() {
   useAuthBootstrap(isDemo ? null : repositories.auth);
   useUnauthorizedHandler(repositories.auth);
 
-  useEffect(() => setupQueryManagers(), []);
+  useEffect(() => setupQueryManagers(isDemo), [isDemo]);
 
   useEffect(() => {
     if (ready) void SplashScreen.hideAsync();
