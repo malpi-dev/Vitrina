@@ -3,6 +3,7 @@ module.exports = {
   globalSetup: './jest.global-setup.js',
   testMatch: ['**/*.test.[jt]s?(x)'],
   setupFiles: ['./jest.setup.js'],
+  setupFilesAfterEnv: ['./jest.setup-after-env.js'],
   moduleNameMapper: { '^@/assets/(.*)$': '<rootDir>/assets/$1', '^@/(.*)$': '<rootDir>/src/$1' },
   testPathIgnorePatterns: ['/node_modules/', '/supabase/', '/.maestro/'],
   transformIgnorePatterns: [
