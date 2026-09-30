@@ -73,6 +73,7 @@
     "test:watch": "jest --watch",
     "images:generate": "node scripts/generate-product-images.mjs",
     "db:seed:generate": "node scripts/generate-seed.mjs",
+    "images:upload": "node --env-file=.env.scripts scripts/upload-product-images.mjs",
     "db:types": "supabase gen types typescript --local --schema vitrina > src/core/supabase/database.generated.ts",
     "db:advance": "psql postgresql://postgres:postgres@127.0.0.1:54322/postgres -f supabase/scripts/advance-order.sql"
   },
