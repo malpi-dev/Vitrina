@@ -5,9 +5,9 @@
 
 ## Avance
 
-`██████████░░░░` 10/14 fases terminadas (71 %)
+`██████████▒░░░` 10/14 fases terminadas (71 %)
 
-**Fase actual:** Fase 11 · Pagos con Stripe (⏳ sin empezar)
+**Fase actual:** Fase 11 · Pagos con Stripe (🚧 en progreso)
 **Última actualización:** 2026-09-30
 **Ventana planificada:** semana 2 (5 – 11 oct 2026), compartida con Rutta. `v1.0.0` como tarde el **2026-10-11**.
 
@@ -25,7 +25,7 @@
 | 08 | Auth y cuenta | `feat/fase-08-auth-y-cuenta` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 09 | Pedidos | `feat/fase-09-pedidos` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 10 | Checkout demo | `feat/fase-10-checkout-demo` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
-| 11 | Pagos con Stripe | `feat/fase-11-pagos-stripe` | ⏳ Pendiente | — | — | — |
+| 11 | Pagos con Stripe | `feat/fase-11-pagos-stripe` | 🚧 En progreso | 2026-09-30 | — | — |
 | 12 | Pulido | `feat/fase-12-pulido` | ⏳ Pendiente | — | — | — |
 | 13 | E2E y CI | `feat/fase-13-e2e-y-ci` | ⏳ Pendiente | — | — | — |
 | 14 | Lanzamiento | `feat/fase-14-lanzamiento` | ⏳ Pendiente | — | — | — |
