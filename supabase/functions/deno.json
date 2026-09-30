@@ -1,0 +1,9 @@
+{
+  "nodeModulesDir": "none",
+  "imports": {
+    "stripe": "npm:stripe@22",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2",
+    "@std/assert": "jsr:@std/assert@1"
+  },
+  "fmt": { "lineWidth": 100 }
+}
