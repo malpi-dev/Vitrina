@@ -1,6 +1,6 @@
 import { Redirect, useRouter } from 'expo-router';
-import type { ReactNode } from 'react';
-import { View } from 'react-native';
+import { useEffect, useRef, type ReactNode } from 'react';
+import { View, type ScrollView } from 'react-native';
 
 import { useSessionMode } from '@/features/auth/presentation/hooks/use-session-mode';
 import { useRequireSession } from '@/features/auth/presentation/hooks/use-require-session';
@@ -135,6 +135,18 @@ export default function CheckoutScreen() {
   const totals = useCartTotals();
   const profile = useMyProfile();
   const { state, pay, retry } = useCheckoutFlow();
+  const scrollRef = useRef<ScrollView>(null);
+
+  // The banners sit at the top while the Pay button is at the bottom: bring them into view.
+  useEffect(() => {
+    if (state.kind === 'canceled' || state.kind === 'failed' || state.kind === 'error') {
+      // After the banner is laid out; an animated scroll gets cut short by the layout change.
+      const frame = requestAnimationFrame(() =>
+        scrollRef.current?.scrollTo({ y: 0, animated: false }),
+      );
+      return () => cancelAnimationFrame(frame);
+    }
+  }, [state]);
 
   if (!canRender) return <Screen testID="checkout-screen">{null}</Screen>;
   // After a successful payment the cart is emptied while we navigate to the order: do not bounce.
@@ -172,7 +184,7 @@ export default function CheckoutScreen() {
   );
 
   return (
-    <Screen scroll testID="checkout-screen" className="gap-4 pt-2">
+    <Screen scroll scrollRef={scrollRef} testID="checkout-screen" className="gap-4 pt-2">
       {mode === 'demo' ? <DemoBanner /> : null}
       <FlowBanner
         state={state}

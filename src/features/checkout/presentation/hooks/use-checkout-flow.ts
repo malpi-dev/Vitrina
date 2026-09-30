@@ -64,6 +64,11 @@ export function useCheckoutFlow() {
         shippingAddress: address,
       });
 
+      // The order reserved stock: refresh catalog data so stock badges are not stale.
+      for (const key of ['products', 'product', 'products-by-ids']) {
+        void queryClient.invalidateQueries({ queryKey: [key] });
+      }
+
       // The pending order stays behind: it is reused or expires on the server (definition §7.3).
       if (session.totalCents !== localTotals.totalCents) {
         const accepted = await confirmNewTotal(session.totalCents);

@@ -81,6 +81,8 @@ describe('CheckoutScreen', () => {
     expect(routerMock.replace).toHaveBeenCalledWith(`/orders/${orderId}`);
     expect(useCartStore.getState().items).toEqual([]);
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['orders'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['products'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['product'] });
     // The empty cart must not bounce us to /cart while navigating to the order.
     expect(routerMock.redirect).not.toHaveBeenCalled();
   });
