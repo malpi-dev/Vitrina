@@ -20,6 +20,7 @@ export const routerMock = {
   push: jest.fn(),
   replace: jest.fn(),
   back: jest.fn(),
+  canGoBack: jest.fn(() => true),
   navigate: jest.fn(),
   dismissTo: jest.fn(),
   setParams: jest.fn((next: Params) => {
@@ -36,6 +37,8 @@ export const routerMock = {
     for (const fn of [this.push, this.replace, this.back, this.navigate, this.dismissTo]) {
       fn.mockClear();
     }
+    this.canGoBack.mockReset();
+    this.canGoBack.mockReturnValue(true);
     this.setParams.mockClear();
   },
 };

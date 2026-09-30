@@ -5,9 +5,9 @@
 
 ## Avance
 
-`███████░░░░░░░` 7/14 fases terminadas (50 %)
+`████████░░░░░░` 8/14 fases terminadas (57 %)
 
-**Fase actual:** Fase 08 · Auth y cuenta (⏳ sin empezar)
+**Fase actual:** Fase 09 · Pedidos (⏳ sin empezar)
 **Última actualización:** 2026-09-30
 **Ventana planificada:** semana 2 (5 – 11 oct 2026), compartida con Rutta. `v1.0.0` como tarde el **2026-10-11**.
 
@@ -22,7 +22,7 @@
 | 05 | Modo demo | `feat/fase-05-modo-demo` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 06 | Catálogo | `feat/fase-06-catalogo` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 07 | Carrito | `feat/fase-07-carrito` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
-| 08 | Auth y cuenta | `feat/fase-08-auth-y-cuenta` | ⏳ Pendiente | — | — | — |
+| 08 | Auth y cuenta | `feat/fase-08-auth-y-cuenta` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 09 | Pedidos | `feat/fase-09-pedidos` | ⏳ Pendiente | — | — | — |
 | 10 | Checkout demo | `feat/fase-10-checkout-demo` | ⏳ Pendiente | — | — | — |
 | 11 | Pagos con Stripe | `feat/fase-11-pagos-stripe` | ⏳ Pendiente | — | — | — |
@@ -72,6 +72,13 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** número o "ver historial de `main`".
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino) o para el autor.
+
+### Fase 08 · Auth y cuenta — 2026-09-30
+- **Hecho:** `SupabaseAuthRepository` y `SupabaseProfileRepository` (+ `profile.mapper.ts`, `ensure_profile`, `getMine` con autocuración) registrados en `createLiveRepositories` (se quitaron los stubs de auth/perfil); `auth.store`, `useAuthBootstrap`, `useSessionMode` (`demo`/`live`/`guest`/`unknown`, el splash espera al estado), `useMyProfile`, handler global de `unauthorized` (`useUnauthorizedHandler`, una sola vez); Sign in con formulario de email (RHF + zod), ruta `(auth)/verify` con `OtpInput` (autoenvío, reenvío con cuenta atrás de 60 s), `safeRedirect`, `useRequireSession`; Orders en invitado con "Sign in to see your orders"; Account completa (cabecera por modo, nombre editable, dirección, selector de tema, sign out, versión, skeleton/error con Sign out); `AddressForm` reutilizable en `checkout/presentation/components` y ruta `account/address`; `fake-supabase` ampliado con `rpc` y `auth`.
+- **Verificación:** `lint`, `typecheck`, `format:check`, `test --ci` en verde (52 suites, 473 tests). No se tocó la BD (sin pgTAP; `supabase db reset` solo para dejar el entorno limpio). Emulador `Pixel_10_Pro` con Supabase local y OTP por Mailpit: código incorrecto -> "The code is invalid or has expired." (CA2); código correcto -> entra, fila en `vitrina.profiles` (CA4); nombre y dirección guardados en BD y visibles; matar y reabrir la app conserva sesión y tema Dark (F1 CA1, F8 CA1); Sign out con un producto en el carrito -> invitado y badge del carrito intacto (CA3); Orders como invitado -> Sign in (sin "Continue as guest", con cerrar) -> tras el código vuelve a Orders (redirección). Emulador limpio (`pm clear`, `adb reverse` eliminado, Metro detenido). Docker: Rutta detenido al empezar y reiniciado al acabar; Vitrina detenido.
+- **PR:** ver historial de `main`.
+- **Decisiones:** ver tabla (OTP refocus, `ensureMine` best effort, `setUser` previo a navegar, mensaje de código inválido).
+- **Pendientes:** ninguno para el autor. `useRequireSession` lo usa Checkout en la fase 10. Sin probar en emulador: handler de `unauthorized` (solo tests), modo demo de Account y modo oscuro de address (tests).
 
 ### Fase 07 · Carrito — 2026-09-30
 - **Hecho:** `cart.store.ts` (Zustand + persist `vitrina-cart`, `version: 1`, `migrate` y `merge` validados con zod, selectores `useCartItems`/`useCartUnitCount`/`useCartTotals`, `clearCart()`); `useDemoActions` vacía el carrito en `enterDemo`/`exitDemo` (no en sign out); "Add to cart" en el detalle con toasts por resultado y `max` del stepper descontando lo que hay en el carrito ("Max in cart"); `use-reconciled-cart` (estados `checking`/`ok`/`offline`, avisos cerrables); `CartLine`, `CartNoticeBanner`; pantalla Cart (lista FlashList, resumen, pista de envío gratis, Checkout, vacío); badge con unidades en la pestaña Cart; `useFocusEffect` añadido al mock de `expo-router`.
@@ -183,6 +190,10 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 | 2026-09-30 | 07 | El store persistido añade `merge` (además de `migrate`) que valida los datos con zod. | `migrate` solo corre si cambia la versión; datos corruptos con la misma versión entraban tal cual. |
 | 2026-09-30 | 07 | El botón Checkout navega con `router.push('/checkout' as never)` hasta que exista la ruta (fase 10). | `typedRoutes` rechaza rutas inexistentes; quitar el cast en la fase 10. |
 | 2026-09-30 | 07 | Ante errores distintos de `network` en la reconciliación, el carrito se muestra sin aviso (`status: 'ok'`). | El archivo de fase solo define `offline` para `network`. |
+| 2026-09-30 | 08 | `verifyCode` publica el usuario en `auth.store` antes de navegar y `profile.ensureMine()` es "best effort" (si falla, se entra igual y `getMine` crea el perfil luego). | Evita que `useRequireSession` vea `guest` un instante tras `replace` al redirect; la sesión ya es válida. |
+| 2026-09-30 | 08 | El mensaje inline de código inválido es el de `getErrorPresentation` ("The code is invalid or has expired."), con punto final. | Coherencia con el resto de errores tipados. |
+| 2026-09-30 | 08 | `OtpInput` recupera el foco cuando vuelve a ser editable. | En Android, deshabilitarlo durante la verificación cerraba el teclado y tras un error no se podía reintentar sin tocar (visto en emulador). |
+| 2026-09-30 | 08 | `src/app/account/address.tsx` con cabecera propia "Default address" en `AppStack`; `/verify` en `(auth)/verify.tsx`. Los tests de pantallas de auth/cuenta mockean `@/core/config/env` con `isDemoForced: false` (en Jest es `true` por no haber backend configurado). | Sin el mock `useSessionMode` siempre devolvía `demo`. |
 
 ## Bloqueos
 

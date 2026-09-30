@@ -1,8 +1,14 @@
 import { useIsDemo } from '@/core/session';
 
-export type SessionMode = 'demo' | 'guest';
+import { useAuthStore } from '../auth.store';
 
-/** Phase 08 adds 'live' when there is an authenticated session. */
+export type SessionMode = 'demo' | 'live' | 'guest' | 'unknown';
+
+/** `unknown` only while the persisted Supabase session is being read at launch. */
 export function useSessionMode(): SessionMode {
-  return useIsDemo() ? 'demo' : 'guest';
+  const isDemo = useIsDemo();
+  const status = useAuthStore((s) => s.status);
+  if (isDemo) return 'demo';
+  if (status === 'signedIn') return 'live';
+  return status === 'signedOut' ? 'guest' : 'unknown';
 }

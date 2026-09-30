@@ -9,6 +9,8 @@ import { useEffect } from 'react';
 
 import type { VitrinaSupabaseClient } from '@/core/supabase';
 
+import { SupabaseProfileRepository } from '@/features/account/data/supabase-profile.repository';
+import { SupabaseAuthRepository } from '@/features/auth/data/supabase-auth.repository';
 import {
   createLiveRepositories,
   createMockRepositories,
@@ -32,13 +34,11 @@ describe('repositories', () => {
     await expect(repos.profile.getMine()).resolves.toMatchObject({ fullName: 'Demo Shopper' });
   });
 
-  it('createLiveRepositories wires Supabase products and "Not available yet" stubs for the rest', async () => {
+  it('createLiveRepositories wires Supabase products, auth and profile and "Not available yet" stubs for the rest', async () => {
     const repos = createLiveRepositories({} as VitrinaSupabaseClient);
     expect(repos.products).toBeInstanceOf(SupabaseProductsRepository);
-    await expect(repos.profile.getMine()).rejects.toMatchObject({
-      info: { code: 'unknown' },
-      message: 'Not available yet',
-    });
+    expect(repos.auth).toBeInstanceOf(SupabaseAuthRepository);
+    expect(repos.profile).toBeInstanceOf(SupabaseProfileRepository);
     await expect(repos.checkout.startCheckout({} as never)).rejects.toThrow('Not available yet');
     expect(() => repos.orders.subscribe({}, jest.fn())).toThrow('Not available yet');
   });

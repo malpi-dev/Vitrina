@@ -23,6 +23,9 @@ import { useIsDemo, useSessionHydrated, useSessionStore } from '@/core/session';
 import { getSupabaseClient } from '@/core/supabase';
 import { ThemeGate, useThemeColors } from '@/core/theme';
 import { ToastHost } from '@/core/ui';
+import { useAuthStore } from '@/features/auth/presentation/auth.store';
+import { useAuthBootstrap } from '@/features/auth/presentation/hooks/use-auth-bootstrap';
+import { useUnauthorizedHandler } from '@/features/auth/presentation/hooks/use-unauthorized-handler';
 import { MockStore } from '@/features/demo/data/mock-store';
 
 void SplashScreen.preventAutoHideAsync();
@@ -40,6 +43,10 @@ function AppStack() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="product/[id]" options={headerOptions} />
+      <Stack.Screen
+        name="account/address"
+        options={{ ...headerOptions, title: 'Default address' }}
+      />
       <Stack.Screen
         name="filters"
         options={{
@@ -62,9 +69,12 @@ export default function RootLayout() {
     DMSerifDisplay_400Regular,
   });
   const hydrated = useSessionHydrated();
-  const ready = (fontsLoaded || fontError !== null) && hydrated;
+  const authStatus = useAuthStore((s) => s.status);
 
   const isDemo = useIsDemo();
+  // In demo there is no session to read; otherwise hold the splash until supabase-js answers.
+  const ready =
+    (fontsLoaded || fontError !== null) && hydrated && (isDemo || authStatus !== 'unknown');
   const demoSessionId = useSessionStore((s) => s.demoSessionId);
   // One MockStore per demo session; a new id (Explore demo again) means fresh data.
   const mockStore = useMemo(
@@ -78,6 +88,9 @@ export default function RootLayout() {
     [mockStore],
   );
   useEffect(() => () => mockStore?.dispose(), [mockStore]);
+
+  useAuthBootstrap(isDemo ? null : repositories.auth);
+  useUnauthorizedHandler(repositories.auth);
 
   useEffect(() => setupQueryManagers(), []);
 
