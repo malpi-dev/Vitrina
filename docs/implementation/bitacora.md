@@ -5,9 +5,9 @@
 
 ## Avance
 
-`██████████▒░░░` 10/14 fases terminadas (71 %)
+`███████████░░░` 11/14 fases terminadas (79 %)
 
-**Fase actual:** Fase 11 · Pagos con Stripe (🚧 en progreso)
+**Fase actual:** Fase 12 · Pulido (⏳ sin empezar). Fase 11 terminada en código; su verificación de punta a punta con Stripe queda pendiente del autor (ver 🙋)
 **Última actualización:** 2026-09-30
 **Ventana planificada:** semana 2 (5 – 11 oct 2026), compartida con Rutta. `v1.0.0` como tarde el **2026-10-11**.
 
@@ -25,7 +25,7 @@
 | 08 | Auth y cuenta | `feat/fase-08-auth-y-cuenta` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 09 | Pedidos | `feat/fase-09-pedidos` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 10 | Checkout demo | `feat/fase-10-checkout-demo` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
-| 11 | Pagos con Stripe | `feat/fase-11-pagos-stripe` | 🚧 En progreso | 2026-09-30 | — | — |
+| 11 | Pagos con Stripe | `feat/fase-11-pagos-stripe` | ✅ Terminada (E2E con Stripe pendiente del autor) | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 12 | Pulido | `feat/fase-12-pulido` | ⏳ Pendiente | — | — | — |
 | 13 | E2E y CI | `feat/fase-13-e2e-y-ci` | ⏳ Pendiente | — | — | — |
 | 14 | Lanzamiento | `feat/fase-14-lanzamiento` | ⏳ Pendiente | — | — | — |
@@ -50,7 +50,9 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 | @shopify/flash-list | 2.0.2 |
 | Supabase CLI | 2.118.0 (Postgres local 17.6) |
 | Stripe CLI | 1.52.0 |
-| Deno | no instalado (se necesita en la fase 11) |
+| Deno | 2.9.7 (`brew install deno`, fase 11) |
+| stripe (npm, Edge Functions) | `npm:stripe@22` (22.6.2) |
+| @supabase/supabase-js (Edge Functions) | `npm:@supabase/supabase-js@2` |
 | Maestro | 2.10.0 |
 | Node | v24.15.0 (CI usa 22) |
 
@@ -60,7 +62,12 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 
 | # | Fase | Acción | Estado |
 |---|---|---|---|
-| — | — | _Ninguna todavía._ | — |
+| 1 | 11 | Crear cuenta de Stripe en **modo test** y copiar `pk_test_…` (Publishable) y `sk_test_…` (Secret) de Dashboard → Developers → API keys. | ⏳ Pendiente |
+| 2 | 11 | `stripe login` en la terminal (Stripe CLI 1.52 ya instalada). | ⏳ Pendiente |
+| 3 | 11 | Pegar `pk_test_…` en `.env` (`EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY`, con `EXPO_PUBLIC_FORCE_DEMO=false` y Supabase local `http://10.0.2.2:54321`) y `sk_test_…` en `supabase/functions/.env` (`VITRINA_STRIPE_SECRET_KEY`; partir de `supabase/functions/.env.example`). Nunca en el chat ni en git. | ⏳ Pendiente |
+| 4 | 11 | Prueba E2E del Paso 7 de la fase 11 (F6 CA1–CA6 + extras), ver receta abajo. Anotar aquí cada resultado. | ⏳ Pendiente |
+
+**Receta E2E (fase 11, paso 7):** (0) detener otros Supabase locales (`docker ps`, `supabase stop --project-id <otro>`) y `supabase start` + `supabase db reset` en Vitrina. (1) Terminal 1: `supabase functions serve --env-file supabase/functions/.env`. (2) Terminal 2: `stripe listen --forward-to http://127.0.0.1:54321/functions/v1/vitrina-stripe-webhook`; copiar el `whsec_…` que imprime a `supabase/functions/.env` (`VITRINA_STRIPE_WEBHOOK_SECRET`) y **reiniciar** la terminal 1. (3) Terminal 3: `npx expo start --dev-client --clear` con el dev build en `Pixel_10_Pro` (`npx expo run:android --no-bundler` si no está instalado; `adb reverse tcp:8081 tcp:8081`). (4) Iniciar sesión como usuario live (OTP por Mailpit `http://127.0.0.1:54324`), añadir 2 productos y probar: CA1 tarjeta `4242 4242 4242 4242` (fecha futura, CVC 123, ZIP 12345) -> carrito vacío y detalle "Confirming payment…" -> Paid en vivo; CA2 `stripe payment_intents retrieve <pi_…>` -> `amount` = `total_cents`; CA3 cerrar el PaymentSheet -> "Payment canceled — your cart is intact", pedido `pending_payment`; CA4 `4000 0000 0000 0002` -> rechazo, reintento posible, `last_payment_error` relleno; CA5 poner stock 0 en Studio a un producto del carrito -> banner con "Update cart"; CA6 `stripe events resend <evt_…>` -> `duplicate`, sin fila nueva en `stripe_events`, `paid_at` igual; extras: cerrar la app antes del webhook y reabrir; `4000 0000 0000 9995`. Si `verify_jwt = true` rechaza el JWT en local (no ocurrió con el stack local probado), poner `verify_jwt = false` en `vitrina-create-payment-intent` y anotarlo. Al terminar: detener functions/listen, borrar nada versionado (`supabase/functions/.env` está ignorado) y restaurar Docker/emulador.
 
 ## Registro
 
@@ -72,6 +79,13 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** número o "ver historial de `main`".
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino) o para el autor.
+
+### Fase 11 · Pagos con Stripe — 2026-09-30
+- **Hecho:** Edge Functions `vitrina-create-payment-intent` (POST, `Authorization` obligatorio, valida forma, reenvía solo `productId`/`quantity`, RPC `create_order` con el JWT del usuario, traducción de errores 409/422/401/500, PaymentIntent con `amount = total_cents` e `idempotencyKey = order.id`, `attach_payment_intent`, 502 si falla Stripe) y `vitrina-stripe-webhook` (firma sobre el cuerpo crudo, evento ajeno ignorado, `stripe_events` idempotente, `mark_order_paid`/`record_payment_failure`, `forgetEvent` + 500 si falla); `_shared/` (`env`, `stripe`, `supabase`, `http`) y `verifyStripeSignature`; `config.toml` (`verify_jwt` true/false); `supabase/functions/.env.example`, `deno.json`; script `functions:check`; `mapFunctionError` + `SupabaseCheckoutRepository` (zod en la respuesta, `reportPaymentResult` no-op) registrado en `createLiveRepositories` y **borrado `unavailable-repositories.ts`**; `StripePaymentProvider` real (`StripeProvider` + `initPaymentSheet`/`presentPaymentSheet`, `Canceled` -> canceled, color `primary` del tema) y `mapStripeError`; mock global de `@stripe/stripe-react-native` en `jest.setup.js`.
+- **Verificación:** `lint`, `typecheck`, `format:check`, `test --ci` en verde (64 suites, 556 tests); `npm run functions:check` en verde (deno check + lint + fmt + 23 tests, incluida la verificación de firma con un secreto local de prueba); `supabase db reset && supabase test db` (82/82, sin cambios de BD). **Prueba local real de las funciones sin claves de Stripe** (Supabase local + `supabase functions serve` con `.env` temporal de valores ficticios, ya borrado): sin `Authorization` -> 401; forma inválida -> 422; producto sin stock -> 409 `outOfStock` con su id; con clave Stripe ficticia -> pedido creado con precios del servidor (`priceCents` del cliente descartado) y 502 `paymentFailed`; webhook firmado con el secreto local: sin firma 400, firma incorrecta 400, `payment_failed` -> `last_payment_error` relleno, evento ajeno 200 sin registrar, `succeeded` -> pedido `paid`, reenvío -> `duplicate` con `paid_at` intacto y `stripe_events` sin fila nueva (F6 CA6 verificado). `verify_jwt = true` funciona con el stack local (JWT legado HS256); la secret key se leyó sin problemas (`SUPABASE_SECRET_KEYS`/`SUPABASE_SERVICE_ROLE_KEY`). Docker: Rutta detenido al empezar y reiniciado al acabar; Vitrina detenido. No se usó emulador ni Stripe (ni clave ni CLI).
+- **PR:** ver historial de `main`.
+- **Decisiones:** ver tabla (Deno, import map, prettier, mock de Stripe).
+- **Pendientes:** del autor (tabla 🙋): claves de test, `stripe login` y la prueba E2E F6 CA1–CA5 + extras con `stripe listen`. **Sin verificar de punta a punta:** creación real del PaymentIntent (importe en Stripe = `total_cents`, CA2), PaymentSheet en el emulador (CA1, CA3, CA4), "Paid" en vivo tras un webhook real, webhook enviado por Stripe CLI, modo oscuro del sheet y el flujo de demo tras los cambios (cubierto por tests). Fase 13 debe añadir el job de `functions:check` a CI (requiere instalar Deno en el runner).
 
 ### Fase 10 · Checkout demo — 2026-09-30
 - **Hecho:** `payment/` (`PaymentPresenterContext` + `usePaymentPresenter` en `payment-presenter-context.ts`, `PaymentPresenterRoot` que elige `SimulatedPaymentProvider` (demo) o `StripePaymentProvider` (marcador live: "Card payments are not configured yet"), `simulated-payment.store` no persistido con `settle` de una sola vez); `SimulatedPaymentScreen` (modal `checkout/simulated-payment`: aviso, total, tarjeta •••• 4242, "Pay (simulated)" con 1 s de spinner, "Simulate failure", cancelar al cerrar, `back()` si no es demo o no hay pago pendiente); `use-checkout-flow` (`startCheckout` -> confirmación de total con `Alert` -> `present` -> `reportPaymentResult` (errores ignorados) -> `clearCart` + invalidar pedidos + `router.replace('/orders/<id>')`); `CheckoutScreen` (gate `useRequireSession`, redirección de carrito vacío, `DemoBanner`, `AddressForm` precargado con skeleton, resumen, "Pay $X.XX", banners `canceled`/`failed`/stock/`network`/`validation`); `AddressForm` admite `footer`; rutas `checkout/index` y `checkout/simulated-payment` en el Stack; `PaymentPresenterRoot` en `_layout`; quitado el cast `as never` del botón Checkout; `renderWithProviders` acepta `paymentPresenter` y el mock de router registra `<Redirect>`.
@@ -215,6 +229,12 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 | 2026-09-30 | 10 | Tras `startCheckout` se invalidan `products`, `product` y `products-by-ids`; al pagar con éxito el flujo usa `router.replace(`/orders/${id}`)` (string) y marca el estado `succeeded` antes de vaciar el carrito. | El stock queda reservado y el catálogo mostraba datos viejos; la marca evita que el redirect de carrito vacío compita con la navegación al pedido. |
 | 2026-09-30 | 10 | El botón "Pay $X.XX" es el submit de `AddressForm` (`submitTestID="pay-button"`) y el resumen entra por un nuevo prop `footer`. | Mantiene el orden dirección -> resumen -> botón sin duplicar el formulario. |
 | 2026-09-30 | 10 | `PaymentPresenterContext`/`usePaymentPresenter` viven en `payment-presenter-context.ts` (reexportados desde `payment-presenter.tsx`); los tests y `renderWithProviders` importan el contexto. | Evita ciclo de imports con los proveedores y que `renderWithProviders` arrastre `expo-router`. |
+| 2026-09-30 | 11 | Deno se instaló con `brew install deno` (2.9.7) porque no estaba. Las funciones comparten `supabase/functions/deno.json` con `nodeModulesDir: "none"` e import map (`stripe`, `@supabase/supabase-js`, `@std/assert`); `functions:check` pasa `--config` a cada comando. | El `package.json`/`node_modules` de la raíz hacía que Deno intentara resolver `npm:` desde `node_modules`; `deno lint` prohíbe especificadores inline (`no-import-prefix`). |
+| 2026-09-30 | 11 | `supabase/functions` se añadió a `.prettierignore` y se formatea con `deno fmt` (ancho 100). `functions:check` incluye `deno fmt --check`. | Evitar dos formateadores peleando (opción que permite el archivo de fase). |
+| 2026-09-30 | 11 | La verificación de firma vive en `_shared/stripe.ts` (`verifyStripeSignature`, con una instancia de Stripe con clave ficticia porque no llama a la API) y tiene test propio con un secreto local; `index.ts` de cada función solo cablea dependencias. | Permite probar la firma real sin credenciales y mantener `index.ts` sin lógica. |
+| 2026-09-30 | 11 | `@stripe/stripe-react-native` se mockea globalmente en `jest.setup.js` con una fábrica propia (`StripeProvider` que devuelve hijos; `useStripe` con `initPaymentSheet`/`presentPaymentSheet` resolviendo `{}`), no con `stripe-react-native/jest/mock`. Los tests del proveedor la sustituyen localmente. | El mock oficial renderiza un string dentro de `<ROOT>` y rompe RNTL. |
+| 2026-09-30 | 11 | `StripePaymentProvider` usa `env.stripePublishableKey ?? ''` en lugar de comprobar la clave en `PaymentPresenterRoot`. | En live siempre hay clave (`isBackendConfigured` la exige), así que el modo demo forzado ya cubre su ausencia. |
+| 2026-09-30 | 11 | Los errores de `create_order` en la función se traducen por `message` (`outOfStock`, `productUnavailable`, `validation`, `unauthorized`) y el ruido de logs se limita a ids y al `code` de Postgres. `verify_jwt = true` se mantuvo (funciona en local). | Según el archivo de fase. |
 
 ## Bloqueos
 
