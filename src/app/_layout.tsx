@@ -1,6 +1,6 @@
 import '@/global.css';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   DMSerifDisplay_400Regular,
   useFonts as useSerifFonts,
@@ -17,9 +17,13 @@ import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { createLiveRepositories, createMockRepositories, RepositoryProvider } from '@/core/di';
 import { queryClient, setupQueryManagers } from '@/core/query';
+import { useIsDemo, useSessionHydrated, useSessionStore } from '@/core/session';
+import { getSupabaseClient } from '@/core/supabase';
 import { ThemeGate } from '@/core/theme';
 import { ToastHost } from '@/core/ui';
+import { MockStore } from '@/features/demo/data/mock-store';
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -31,7 +35,23 @@ export default function RootLayout() {
     Inter_700Bold,
     DMSerifDisplay_400Regular,
   });
-  const ready = fontsLoaded || fontError !== null;
+  const hydrated = useSessionHydrated();
+  const ready = (fontsLoaded || fontError !== null) && hydrated;
+
+  const isDemo = useIsDemo();
+  const demoSessionId = useSessionStore((s) => s.demoSessionId);
+  // One MockStore per demo session; a new id (Explore demo again) means fresh data.
+  const mockStore = useMemo(
+    () => (isDemo ? new MockStore() : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- demoSessionId is the reset trigger
+    [isDemo, demoSessionId],
+  );
+  const repositories = useMemo(
+    () =>
+      mockStore ? createMockRepositories(mockStore) : createLiveRepositories(getSupabaseClient()),
+    [mockStore],
+  );
+  useEffect(() => () => mockStore?.dispose(), [mockStore]);
 
   useEffect(() => setupQueryManagers(), []);
 
@@ -46,7 +66,9 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <ThemeGate>
-            <Stack screenOptions={{ headerShown: false }} />
+            <RepositoryProvider repositories={repositories}>
+              <Stack screenOptions={{ headerShown: false }} />
+            </RepositoryProvider>
             <ToastHost />
           </ThemeGate>
         </QueryClientProvider>
