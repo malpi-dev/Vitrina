@@ -5,9 +5,9 @@
 
 ## Avance
 
-`██████░░░░░░░░` 6/14 fases terminadas (43 %)
+`███████░░░░░░░` 7/14 fases terminadas (50 %)
 
-**Fase actual:** Fase 07 · Carrito (⏳ sin empezar)
+**Fase actual:** Fase 08 · Auth y cuenta (⏳ sin empezar)
 **Última actualización:** 2026-09-30
 **Ventana planificada:** semana 2 (5 – 11 oct 2026), compartida con Rutta. `v1.0.0` como tarde el **2026-10-11**.
 
@@ -21,7 +21,7 @@
 | 04 | Backend local | `feat/fase-04-backend-local` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 05 | Modo demo | `feat/fase-05-modo-demo` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 06 | Catálogo | `feat/fase-06-catalogo` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
-| 07 | Carrito | `feat/fase-07-carrito` | ⏳ Pendiente | — | — | — |
+| 07 | Carrito | `feat/fase-07-carrito` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 08 | Auth y cuenta | `feat/fase-08-auth-y-cuenta` | ⏳ Pendiente | — | — | — |
 | 09 | Pedidos | `feat/fase-09-pedidos` | ⏳ Pendiente | — | — | — |
 | 10 | Checkout demo | `feat/fase-10-checkout-demo` | ⏳ Pendiente | — | — | — |
@@ -72,6 +72,13 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** número o "ver historial de `main`".
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino) o para el autor.
+
+### Fase 07 · Carrito — 2026-09-30
+- **Hecho:** `cart.store.ts` (Zustand + persist `vitrina-cart`, `version: 1`, `migrate` y `merge` validados con zod, selectores `useCartItems`/`useCartUnitCount`/`useCartTotals`, `clearCart()`); `useDemoActions` vacía el carrito en `enterDemo`/`exitDemo` (no en sign out); "Add to cart" en el detalle con toasts por resultado y `max` del stepper descontando lo que hay en el carrito ("Max in cart"); `use-reconciled-cart` (estados `checking`/`ok`/`offline`, avisos cerrables); `CartLine`, `CartNoticeBanner`; pantalla Cart (lista FlashList, resumen, pista de envío gratis, Checkout, vacío); badge con unidades en la pestaña Cart; `useFocusEffect` añadido al mock de `expo-router`.
+- **Verificación:** `lint`, `typecheck`, `format:check`, `test --ci` en verde (42 suites, 401 tests). No se tocó la BD (sin pgTAP). **No** se hizo la verificación manual del paso 6 en emulador ni con Supabase local (cubierta por tests de store, hook, pantalla, detalle y badge); Docker y emulador no se tocaron.
+- **PR:** ver historial de `main`.
+- **Decisiones:** ver tabla (reconciliación en `queryFn`, `merge`, ruta `/checkout`).
+- **Pendientes:** ninguno para el autor. Revisar en emulador (fase 12 o antes de la 14) el paso 6 completo y el modo oscuro de Cart. `/checkout` no existe hasta la fase 10 (el botón navega a ella con un cast).
 
 ### Fase 06 · Catálogo — 2026-09-30
 - **Hecho:** `product.mapper.ts` + `SupabaseProductsRepository` (filtros, `escapeLike`, orden con desempates, paginación con fila extra, `notFound`, `getByIds` vacío sin petición) registrado en `createLiveRepositories` (se quitó `unavailableProducts`); `scripts/upload-product-images.mjs` + `npm run images:upload`; hooks (`use-catalog-filters`, `use-products`, `use-categories`, `use-product`, `useDebouncedValue`); componentes (`ProductCard`, `CategoryChips`, `SearchBar`, `ProductGridSkeleton`, `ProductGallery`); pantallas Catálogo (FlashList 2 columnas, pull to refresh, pie de error de paginación), Filtros (`src/app/filters.tsx`, modal) y Detalle (`src/app/product/[id].tsx`, "Add to cart" deshabilitado hasta la fase 07); `AppStack` en `_layout` con cabeceras; `AppText` admite `tone="warning"`; utilidades de test `fake-supabase`, `flash-list-mock`, `expo-image-mock`, `expo-router-mock`.
@@ -172,6 +179,10 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 | 2026-09-30 | 06 | `router.dismissTo({ pathname: '/', params })` funciona en Expo Router 57 (comprobado en emulador); se envían todas las claves con `undefined` para borrar las vaciadas. En Android el modal se ve como pantalla normal con cabecera. | Según el archivo de fase; sin necesidad de `navigate`. |
 | 2026-09-30 | 06 | Mocks de test añadidos en `jest.setup.js`: FlashList (`src/test/flash-list-mock.tsx`, expone `onEndReached`/`onRefresh` como props), `expo-image` y `expo-router` (`src/test/expo-router-mock.ts`, con search params reales). Claves de lista de galería con índice porque en Jest todos los assets resuelven a la misma URI. | FlashList 2.0.2 `jestSetup` roto; `useLocalSearchParams` necesita estado para probar búsqueda y filtros. |
 | 2026-09-30 | 06 | `clearFilters` borra todo, incluido `q`. La cantidad máxima usa `MAX_QTY_PER_LINE` de `cart/domain`. `.env.scripts` local (no commiteado) con la secret key local. | Decisión por defecto del archivo de fase; evita duplicar la constante. |
+| 2026-09-30 | 07 | La reconciliación se ejecuta dentro del `queryFn` de `useReconciledCart` (aplica `reconcileCart` al carrito actual y guarda los avisos) en vez de un `useEffect` sobre `data`. | La regla `react-hooks/set-state-in-effect` prohíbe `setState` en el efecto; así se ejecuta una vez por respuesta. |
+| 2026-09-30 | 07 | El store persistido añade `merge` (además de `migrate`) que valida los datos con zod. | `migrate` solo corre si cambia la versión; datos corruptos con la misma versión entraban tal cual. |
+| 2026-09-30 | 07 | El botón Checkout navega con `router.push('/checkout' as never)` hasta que exista la ruta (fase 10). | `typedRoutes` rechaza rutas inexistentes; quitar el cast en la fase 10. |
+| 2026-09-30 | 07 | Ante errores distintos de `network` en la reconciliación, el carrito se muestra sin aviso (`status: 'ok'`). | El archivo de fase solo define `offline` para `network`. |
 
 ## Bloqueos
 

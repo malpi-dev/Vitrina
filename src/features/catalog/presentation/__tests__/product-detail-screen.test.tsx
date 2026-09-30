@@ -1,5 +1,7 @@
 import { fireEvent, screen } from '@testing-library/react-native';
 
+import { useCartStore } from '@/features/cart/presentation/cart.store';
+import { useToastStore } from '@/core/ui';
 import { routerMock } from '@/test/expo-router-mock';
 import { renderWithProviders } from '@/test/render-with-providers';
 
@@ -10,9 +12,13 @@ jest.mock('expo-router', () => jest.requireActual('@/test/expo-router-mock').exp
 const id = (n: number) => `00000000-0000-4000-8000-000000000${n}`;
 
 describe('ProductDetailScreen', () => {
-  beforeEach(() => routerMock.reset());
+  beforeEach(() => {
+    routerMock.reset();
+    useCartStore.setState({ items: [] });
+    useToastStore.getState().hide();
+  });
 
-  it('shows skeleton, then the product with gallery, price, category and a disabled add button', async () => {
+  it('shows skeleton, then the product with gallery, price, category and an enabled add button', async () => {
     routerMock.setSearchParams({ id: id(207) });
     await renderWithProviders(<ProductDetailScreen />);
     expect(screen.getByTestId('product-skeleton')).toBeOnTheScreen();
@@ -22,7 +28,7 @@ describe('ProductDetailScreen', () => {
     expect(screen.getByTestId('product-price')).toHaveTextContent('$22.00');
     expect(await screen.findByTestId('product-category')).toHaveTextContent('Kitchen');
     expect(screen.getByTestId('product-stock')).toHaveTextContent('In stock');
-    expect(screen.getByTestId('add-to-cart-button')).toBeDisabled();
+    expect(screen.getByTestId('add-to-cart-button')).toBeEnabled();
   });
 
   it('limits the quantity to the stock (3) and never below 1', async () => {
@@ -60,5 +66,39 @@ describe('ProductDetailScreen', () => {
     expect(await screen.findByTestId('product-not-available')).toBeOnTheScreen();
     await fireEvent.press(screen.getByTestId('back-to-catalog-button'));
     expect(routerMock.replace).toHaveBeenCalledWith('/');
+  });
+
+  it('adds to the cart with a toast and resets the stepper to 1', async () => {
+    routerMock.setSearchParams({ id: id(207) });
+    await renderWithProviders(<ProductDetailScreen />);
+    await fireEvent.press(await screen.findByTestId('quantity-stepper-increment'));
+    await fireEvent.press(screen.getByTestId('add-to-cart-button'));
+    expect(useCartStore.getState().items).toMatchObject([{ productId: id(207), quantity: 2 }]);
+    expect(useToastStore.getState()).toMatchObject({ message: 'Added to cart', tone: 'success' });
+    expect(screen.getByTestId('quantity-stepper-value')).toHaveTextContent('1');
+  });
+
+  it('discounts what is already in the cart and ends with "Max in cart"', async () => {
+    routerMock.setSearchParams({ id: id(208) }); // stock 3
+    await renderWithProviders(<ProductDetailScreen />);
+    await fireEvent.press(await screen.findByTestId('quantity-stepper-increment'));
+    await fireEvent.press(screen.getByTestId('quantity-stepper-increment'));
+    await fireEvent.press(screen.getByTestId('add-to-cart-button'));
+    expect(useCartStore.getState().items[0]?.quantity).toBe(3);
+    expect(screen.getByTestId('add-to-cart-button')).toBeDisabled();
+    expect(screen.getByText('Max in cart')).toBeOnTheScreen();
+  });
+
+  it('warns when the cart is full', async () => {
+    routerMock.setSearchParams({ id: id(207) });
+    const { store } = await renderWithProviders(<ProductDetailScreen />);
+    const others = store.products.filter((p) => p.id !== id(207) && p.stock > 0).slice(0, 20);
+    for (const p of others) useCartStore.getState().add(p, 1);
+    await screen.findByTestId('product-name');
+    await fireEvent.press(screen.getByTestId('add-to-cart-button'));
+    expect(useToastStore.getState()).toMatchObject({
+      message: 'Your cart is full (20 items max)',
+      tone: 'warning',
+    });
   });
 });
