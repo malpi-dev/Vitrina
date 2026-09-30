@@ -5,9 +5,9 @@
 
 ## Avance
 
-`░░░░░░░░░░░░░░` 0/14 fases terminadas (0 %)
+`▒░░░░░░░░░░░░░` 0/14 fases terminadas (0 %)
 
-**Fase actual:** Fase 01 · Andamiaje (⏳ sin empezar)
+**Fase actual:** Fase 01 · Andamiaje (🚧 en progreso)
 **Última actualización:** 2026-09-30
 **Ventana planificada:** semana 2 (5 – 11 oct 2026), compartida con Rutta. `v1.0.0` como tarde el **2026-10-11**.
 
@@ -15,7 +15,7 @@
 
 | # | Fase | Rama | Estado | Inicio | Fin | PR |
 |---|---|---|---|---|---|---|
-| 01 | Andamiaje | `feat/fase-01-andamiaje` | ⏳ Pendiente | — | — | — |
+| 01 | Andamiaje | `feat/fase-01-andamiaje` | 🚧 En progreso | 2026-09-30 | — | — |
 | 02 | Core | `feat/fase-02-core` | ⏳ Pendiente | — | — | — |
 | 03 | Dominio | `feat/fase-03-dominio` | ⏳ Pendiente | — | — | — |
 | 04 | Backend local | `feat/fase-04-backend-local` | ⏳ Pendiente | — | — | — |
