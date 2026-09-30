@@ -5,9 +5,9 @@
 
 ## Avance
 
-`██▒░░░░░░░░░░░` 2/14 fases terminadas (14 %)
+`███░░░░░░░░░░░` 3/14 fases terminadas (21 %)
 
-**Fase actual:** Fase 03 · Dominio (🚧 en progreso)
+**Fase actual:** Fase 04 · Backend local (⏳ sin empezar)
 **Última actualización:** 2026-09-30
 **Ventana planificada:** semana 2 (5 – 11 oct 2026), compartida con Rutta. `v1.0.0` como tarde el **2026-10-11**.
 
@@ -17,7 +17,7 @@
 |---|---|---|---|---|---|---|
 | 01 | Andamiaje | `feat/fase-01-andamiaje` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 02 | Core | `feat/fase-02-core` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
-| 03 | Dominio | `feat/fase-03-dominio` | 🚧 En progreso | 2026-09-30 | — | — |
+| 03 | Dominio | `feat/fase-03-dominio` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 04 | Backend local | `feat/fase-04-backend-local` | ⏳ Pendiente | — | — | — |
 | 05 | Modo demo | `feat/fase-05-modo-demo` | ⏳ Pendiente | — | — | — |
 | 06 | Catálogo | `feat/fase-06-catalogo` | ⏳ Pendiente | — | — | — |
@@ -73,6 +73,13 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino) o para el autor.
 
+### Fase 03 · Dominio — 2026-09-30
+- **Hecho:** dominio puro de `catalog` (Category, Product, `parseProductFilters`/`toProductSearchParams`/`hasActiveFilters`/`matchesFilters`/`compareProducts`, `ProductsRepository`), `cart` (CartItem, ShippingPolicy, `calculateCartTotals`, `addToCart`/`updateQuantity`/`removeItem`, `reconcileCart`), `checkout` (`shippingAddressSchema`, `validateCheckoutItems`, PaymentOutcome, CheckoutSession, `CheckoutRepository`), `orders` (`canTransition`, Order, `buildOrderTimeline`, `OrdersRepository`), `auth` (AuthUser, esquemas de email/OTP, `AuthRepository`) y `account` (Profile, `fullNameSchema`, `ProfileRepository`).
+- **Verificación:** `lint`, `typecheck`, `format:check`, `test --ci` en verde (250 tests, 139 nuevos). Cobertura de `src/features/*/domain/`: 100 % de líneas, ramas, funciones y sentencias. Ningún `Date.now()` ni `new Date()` sin argumento en `domain/` (comprobado con grep). La regla ESLint de arquitectura no se tocó.
+- **PR:** ver historial de `main`.
+- **Decisiones:** ver tabla (desempates de orden, `lineFull` con stock bajado, orden de avisos, `Page`/tipos).
+- **Pendientes:** ninguno para el autor. Fase 04 debe replicar en SQL el orden de `compareProducts` (desempate) y los casos de envío $49.99/$50.00.
+
 ### Fase 02 · Core — 2026-09-30
 - **Hecho:** `DomainError` (unión discriminada) + `mapSupabaseError` + mensajes por código; `formatMoney`/`isValidCents`; tema (tokens, store persistido `vitrina-theme`, `ThemeGate` con StatusBar y `expo-system-ui`); contraste AA con test; UI base (AppText, Price, Screen, Button, Card, Skeleton, EmptyState, ErrorState, Badge, TextField, QuantityStepper, Toast); cliente Supabase (schema `vitrina`) + `run()`; QueryClient (`createQueryClient`, reintentos solo `network`/`unknown`, handler de `unauthorized`), `queryKeys`, NetInfo/AppState; layout raíz con fuentes y providers; kitchen sink temporal en `src/app/index.tsx`; `renderWithProviders`, mock de Reanimated y `jest.setup-after-env.js`.
 - **Verificación:** `lint`, `typecheck`, `format:check`, `test --ci` en verde (111 tests). Kitchen sink revisado en `Pixel_10_Pro` en claro y oscuro (vía selector del tema); se corrigió un bug visual real (texto oscuro sobre botones sólidos).
@@ -125,6 +132,10 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 | 2026-09-30 | 02 | `query-client.ts` exporta `createQueryClient()` además del singleton `queryClient`. | Permite probar reintentos y el handler de `unauthorized` con instancias aisladas. |
 | 2026-09-30 | 02 | `AppText` admite además `tone="onPrimary"`; `ErrorState` muestra "Retry" solo si hay `onRetry`; el toast usa `toast.store.ts` con `show(message, tone)`. | El texto de `Button` sólido con `text-text` ganaba a `text-on-primary` (visto en emulador); el resto sigue el archivo de fase. |
 | 2026-09-30 | 02 | Tipos `Database` de Supabase aún no existen: el cliente no está tipado hasta la fase 04. | Según el archivo de fase. |
+| 2026-09-30 | 03 | Desempate de orden: `newest` = `createdAt` desc, luego `id` asc; `price_asc`/`price_desc` = precio, luego `newest`, luego `id` asc. El archivo de fase solo fijaba `newest`. | Orden total y determinista; la consulta SQL de la fase 04 debe usar el mismo `order by` para que mock y backend coincidan (paginación por offset estable). |
+| 2026-09-30 | 03 | `parseProductFilters`: `min`/`max` solo aceptan enteros no negativos (`1.5` se ignora); `category` se valida con una regex UUID laxa (sin exigir versión/variante); `toProductSearchParams` convierte centavos a dólares con `Math.round`. | El archivo de fase dice "dólares enteros" y "uuid"; la regex laxa evita rechazar UUID de fixtures no RFC. |
+| 2026-09-30 | 03 | `addToCart` con línea existente por encima del límite (p. ej. el stock bajó) devuelve `rejected/lineFull`; `updateQuantity` con id desconocido o cantidad no finita devuelve el mismo array. `reconcileCart` emite `priceChanged` antes de `quantityAdjusted` en una misma línea y trata `stock <= 0` como `outOfStock`. | El archivo de fase no especificaba estos bordes. |
+| 2026-09-30 | 03 | `shippingAddressSchema`: `line2`/`phone` vacíos o en blanco pasan a `undefined` mediante `refine` + `transform` (no `z.preprocess`), manteniendo la clave opcional en el tipo inferido. `validateCheckoutItems` lanza `DomainError({ code: 'validation', fields: { items } })`. | Zod 4.6.5; el tipo de `ShippingAddress` queda con `line2?`/`phone?`. |
 
 ## Bloqueos
 
