@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --color-primary: 196 85 45; /* #C4552D terracotta */
+  --color-primary: 187 81 43; /* #BB512B terracotta */
   --color-on-primary: 255 255 255; /* #FFFFFF */
   --color-background: 250 247 242; /* #FAF7F2 ivory */
   --color-surface: 255 255 255; /* #FFFFFF */
@@ -12,7 +12,7 @@
   --color-text-muted: 107 98 90; /* #6B625A */
   --color-border: 228 221 211; /* #E4DDD3 */
   --color-success: 47 125 79; /* #2F7D4F */
-  --color-warning: 183 121 31; /* #B7791F */
+  --color-warning: 161 107 27; /* #A16B1B */
   --color-info: 43 108 176; /* #2B6CB0 */
   --color-danger: 180 35 24; /* #B42318 */
 }

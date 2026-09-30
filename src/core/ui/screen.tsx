@@ -1,0 +1,42 @@
+import type { ReactNode } from 'react';
+import { KeyboardAvoidingView, ScrollView, View } from 'react-native';
+import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
+
+interface ScreenProps {
+  children: ReactNode;
+  scroll?: boolean;
+  /** Horizontal padding. Defaults to true. */
+  padded?: boolean;
+  edges?: Edge[];
+  className?: string;
+  testID?: string;
+}
+
+export function Screen({
+  children,
+  scroll = false,
+  padded = true,
+  edges = ['top', 'left', 'right'],
+  className = '',
+  testID,
+}: ScreenProps) {
+  const padding = padded ? 'px-4' : '';
+  return (
+    <SafeAreaView className="flex-1 bg-background" edges={edges} testID={testID}>
+      {scroll ? (
+        // Edge-to-edge Android does not resize the window for the keyboard: pad instead.
+        <KeyboardAvoidingView behavior="padding" className="flex-1">
+          <ScrollView
+            className="flex-1"
+            contentContainerClassName={`${padding} pb-8 ${className}`}
+            keyboardShouldPersistTaps="handled"
+          >
+            {children}
+          </ScrollView>
+        </KeyboardAvoidingView>
+      ) : (
+        <View className={`flex-1 ${padding} ${className}`}>{children}</View>
+      )}
+    </SafeAreaView>
+  );
+}
