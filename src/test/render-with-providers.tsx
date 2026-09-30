@@ -4,6 +4,10 @@ import type { ReactElement, ReactNode } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { createMockRepositories, RepositoryProvider, type Repositories } from '@/core/di';
+import {
+  PaymentPresenterContext,
+  type PaymentPresenter,
+} from '@/features/checkout/presentation/payment/payment-presenter-context';
 import { MockStore } from '@/features/demo/data/mock-store';
 
 const initialMetrics = {
@@ -16,6 +20,8 @@ interface ProviderOptions {
   /** Overrides on top of the mock repositories (zero latency). */
   repositories?: Partial<Repositories>;
   store?: MockStore;
+  /** Provides a payment presenter (e.g. a fake for checkout tests). */
+  paymentPresenter?: PaymentPresenter;
 }
 
 export function createTestQueryClient(): QueryClient {
@@ -34,6 +40,7 @@ export async function renderWithProviders(
     queryClient = createTestQueryClient(),
     store = new MockStore({ latencyMs: [0, 0] }),
     repositories,
+    paymentPresenter,
     ...options
   }: ProviderOptions & Omit<RenderOptions, 'wrapper'> = {},
 ) {
@@ -41,7 +48,15 @@ export async function renderWithProviders(
   const Wrapper = ({ children }: { children: ReactNode }) => (
     <SafeAreaProvider initialMetrics={initialMetrics}>
       <QueryClientProvider client={queryClient}>
-        <RepositoryProvider repositories={allRepositories}>{children}</RepositoryProvider>
+        <RepositoryProvider repositories={allRepositories}>
+          {paymentPresenter ? (
+            <PaymentPresenterContext.Provider value={paymentPresenter}>
+              {children}
+            </PaymentPresenterContext.Provider>
+          ) : (
+            children
+          )}
+        </RepositoryProvider>
       </QueryClientProvider>
     </SafeAreaProvider>
   );
