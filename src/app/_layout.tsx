@@ -43,6 +43,7 @@ function AppStack() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="product/[id]" options={headerOptions} />
+      <Stack.Screen name="orders/[id]" options={{ ...headerOptions, title: 'Order' }} />
       <Stack.Screen
         name="account/address"
         options={{ ...headerOptions, title: 'Default address' }}

@@ -5,9 +5,9 @@
 
 ## Avance
 
-`████████░░░░░░` 8/14 fases terminadas (57 %)
+`█████████░░░░░` 9/14 fases terminadas (64 %)
 
-**Fase actual:** Fase 09 · Pedidos (⏳ sin empezar)
+**Fase actual:** Fase 10 · Checkout demo (⏳ sin empezar)
 **Última actualización:** 2026-09-30
 **Ventana planificada:** semana 2 (5 – 11 oct 2026), compartida con Rutta. `v1.0.0` como tarde el **2026-10-11**.
 
@@ -23,7 +23,7 @@
 | 06 | Catálogo | `feat/fase-06-catalogo` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 07 | Carrito | `feat/fase-07-carrito` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 08 | Auth y cuenta | `feat/fase-08-auth-y-cuenta` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
-| 09 | Pedidos | `feat/fase-09-pedidos` | ⏳ Pendiente | — | — | — |
+| 09 | Pedidos | `feat/fase-09-pedidos` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 10 | Checkout demo | `feat/fase-10-checkout-demo` | ⏳ Pendiente | — | — | — |
 | 11 | Pagos con Stripe | `feat/fase-11-pagos-stripe` | ⏳ Pendiente | — | — | — |
 | 12 | Pulido | `feat/fase-12-pulido` | ⏳ Pendiente | — | — | — |
@@ -72,6 +72,13 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** número o "ver historial de `main`".
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino) o para el autor.
+
+### Fase 09 · Pedidos — 2026-09-30
+- **Hecho:** `order.mapper.ts` + `SupabaseOrdersRepository` (`list`, `getById` con `notFound`, `subscribe` con `postgres_changes`, canales `vitrina:orders:<uid>` / `vitrina:order:<id>`, `setAuth`, sin carreras al desuscribir) registrado en `createLiveRepositories` (se quitó `unavailableOrders`; solo queda el stub de checkout); `fake-supabase` ampliado (canales, `removeChannel`, `realtime.setAuth` con pausa/fallo, `setSessionUser`); hooks `useOrders`, `useOrder`, `useOrdersLive`, `useOrderLive` (+ `use-order-subscription.ts` compartido: actualiza detalle y lista, antepone pedidos nuevos, invalida al volver de `paused`); componentes `OrderStatusBadge`, `OrderRow`, `OrderTimeline`, `LiveIndicator`; pantallas Orders (FlashList, refresco, skeleton, vacío, error, invitado) y detalle (`src/app/orders/[id].tsx`: estado, línea de tiempo, líneas congeladas, dirección, totales, pista de 30 s, `notFound`, error).
+- **Verificación:** `lint`, `typecheck`, `format:check`, `test --ci` en verde (56 suites, 511 tests); `supabase db reset && supabase test db` (82/82, sin cambios de BD). Emulador `Pixel_10_Pro` con Supabase local y `shopper@vitrina.dev` (OTP por Mailpit): Orders vacío; el pedido creado por SQL aparece solo (INSERT en vivo); detalle en "Confirming payment…" pasa a **Paid** al ejecutar `mark_order_paid` sin tocar nada (F7 CA1); `db:advance` a `shipped` y `delivered` se refleja en ~1 s (F7 CA2; medido por capturas, < 2 s); con `supabase stop` aparece "Live updates paused" y al reiniciar desaparece y la lista se resincroniza; `realtime.subscription` queda con 1 fila (la de la lista) al salir del detalle y con la app parada. F7 CA3 (segundo usuario) cubierto por pgTAP de RLS (no se repitió a mano); F7 CA4 con el mock en tests (fake timers). Emulador limpio (`pm clear`, `adb reverse` eliminado, Metro detenido). Docker: Rutta detenido al empezar y reiniciado al acabar; Vitrina detenido.
+- **PR:** ver historial de `main`.
+- **Decisiones:** ver tabla (reintentos de `useOrder`, `await` de `act`).
+- **Pendientes:** ninguno para el autor. Sin revisar manualmente: modo oscuro de Orders/detalle (solo tokens; fase 12), `RefreshControl` en detalle y modo demo en emulador (tests).
 
 ### Fase 08 · Auth y cuenta — 2026-09-30
 - **Hecho:** `SupabaseAuthRepository` y `SupabaseProfileRepository` (+ `profile.mapper.ts`, `ensure_profile`, `getMine` con autocuración) registrados en `createLiveRepositories` (se quitaron los stubs de auth/perfil); `auth.store`, `useAuthBootstrap`, `useSessionMode` (`demo`/`live`/`guest`/`unknown`, el splash espera al estado), `useMyProfile`, handler global de `unauthorized` (`useUnauthorizedHandler`, una sola vez); Sign in con formulario de email (RHF + zod), ruta `(auth)/verify` con `OtpInput` (autoenvío, reenvío con cuenta atrás de 60 s), `safeRedirect`, `useRequireSession`; Orders en invitado con "Sign in to see your orders"; Account completa (cabecera por modo, nombre editable, dirección, selector de tema, sign out, versión, skeleton/error con Sign out); `AddressForm` reutilizable en `checkout/presentation/components` y ruta `account/address`; `fake-supabase` ampliado con `rpc` y `auth`.
@@ -194,6 +201,8 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 | 2026-09-30 | 08 | El mensaje inline de código inválido es el de `getErrorPresentation` ("The code is invalid or has expired."), con punto final. | Coherencia con el resto de errores tipados. |
 | 2026-09-30 | 08 | `OtpInput` recupera el foco cuando vuelve a ser editable. | En Android, deshabilitarlo durante la verificación cerraba el teclado y tras un error no se podía reintentar sin tocar (visto en emulador). |
 | 2026-09-30 | 08 | `src/app/account/address.tsx` con cabecera propia "Default address" en `AppStack`; `/verify` en `(auth)/verify.tsx`. Los tests de pantallas de auth/cuenta mockean `@/core/config/env` con `isDemoForced: false` (en Jest es `true` por no haber backend configurado). | Sin el mock `useSessionMode` siempre devolvía `demo`. |
+| 2026-09-30 | 09 | `useOrder` no define `retry` propio: usa el del `QueryClient` (solo reintenta `network`/`unknown`, así `notFound` no se reintenta). Un `retry` propio pisaba el de los tests y de la app. | El archivo de fase pedía "sin reintentos para `notFound`"; el valor por defecto ya lo cumple. |
+| 2026-09-30 | 09 | En RNTL 14 `act` es asíncrono: los tests de hooks usan `await act(...)` y, con fake timers, un `advanceTimersByTimeAsync(1)` extra para vaciar el lote de notificaciones de TanStack Query. | Sin ello los cambios de caché no se veían en pantalla dentro del test. |
 
 ## Bloqueos
 

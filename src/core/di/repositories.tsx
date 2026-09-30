@@ -13,10 +13,11 @@ import type { ProductsRepository } from '@/features/catalog/domain/products.repo
 import { MockCheckoutRepository } from '@/features/checkout/data/mock-checkout.repository';
 import type { CheckoutRepository } from '@/features/checkout/domain/checkout.repository';
 import type { MockStore } from '@/features/demo/data/mock-store';
+import { SupabaseOrdersRepository } from '@/features/orders/data/supabase-orders.repository';
 import { MockOrdersRepository } from '@/features/orders/data/mock-orders.repository';
 import type { OrdersRepository } from '@/features/orders/domain/orders.repository';
 
-import { unavailableCheckout, unavailableOrders } from './unavailable-repositories';
+import { unavailableCheckout } from './unavailable-repositories';
 
 // Composition root: the only place in core/ that imports from features/*/data.
 export interface Repositories {
@@ -42,7 +43,7 @@ export function createLiveRepositories(client: VitrinaSupabaseClient): Repositor
   return {
     products: new SupabaseProductsRepository(client),
     checkout: unavailableCheckout,
-    orders: unavailableOrders,
+    orders: new SupabaseOrdersRepository(client),
     auth: new SupabaseAuthRepository(client),
     profile: new SupabaseProfileRepository(client),
   };
