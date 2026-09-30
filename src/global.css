@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: 196 85 45; /* #C4552D terracotta */
+  --color-on-primary: 255 255 255; /* #FFFFFF */
+  --color-background: 250 247 242; /* #FAF7F2 ivory */
+  --color-surface: 255 255 255; /* #FFFFFF */
+  --color-surface-muted: 241 236 228; /* #F1ECE4 */
+  --color-text: 30 26 23; /* #1E1A17 */
+  --color-text-muted: 107 98 90; /* #6B625A */
+  --color-border: 228 221 211; /* #E4DDD3 */
+  --color-success: 47 125 79; /* #2F7D4F */
+  --color-warning: 183 121 31; /* #B7791F */
+  --color-info: 43 108 176; /* #2B6CB0 */
+  --color-danger: 180 35 24; /* #B42318 */
+}
+
+.dark:root {
+  --color-primary: 224 122 82; /* #E07A52 */
+  --color-on-primary: 26 20 17; /* #1A1411 */
+  --color-background: 20 17 15; /* #14110F */
+  --color-surface: 31 26 23; /* #1F1A17 */
+  --color-surface-muted: 42 36 32; /* #2A2420 */
+  --color-text: 243 238 232; /* #F3EEE8 */
+  --color-text-muted: 168 158 148; /* #A89E94 */
+  --color-border: 58 50 44; /* #3A322C */
+  --color-success: 92 184 128; /* #5CB880 */
+  --color-warning: 224 169 74; /* #E0A94A */
+  --color-info: 106 163 224; /* #6AA3E0 */
+  --color-danger: 240 113 103; /* #F07167 */
+}
