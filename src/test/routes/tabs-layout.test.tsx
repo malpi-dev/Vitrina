@@ -1,6 +1,8 @@
-import { screen } from '@testing-library/react-native';
+import { act, screen } from '@testing-library/react-native';
 
+import { useCartStore } from '@/features/cart/presentation/cart.store';
 import { useSessionStore } from '@/core/session';
+import { MockStore } from '@/features/demo/data/mock-store';
 import { renderWithProviders } from '@/test/render-with-providers';
 
 import TabsLayout from '@/app/(tabs)/_layout';
@@ -23,9 +25,14 @@ jest.mock('expo-router', () => {
     options,
   }: {
     name: string;
-    options: { tabBarButtonTestID: string };
+    options: { tabBarButtonTestID: string; tabBarBadge?: number };
   }) {
-    return <Text testID={options.tabBarButtonTestID}>{name}</Text>;
+    return (
+      <Text testID={options.tabBarButtonTestID}>
+        {name}
+        {options.tabBarBadge === undefined ? '' : `:${options.tabBarBadge}`}
+      </Text>
+    );
   };
   function Redirect({ href }: { href: string }) {
     return <Text testID="redirect">{href}</Text>;
@@ -57,5 +64,17 @@ describe('TabsLayout', () => {
     await renderWithProviders(<TabsLayout />);
     expect(screen.queryByTestId('redirect')).not.toBeOnTheScreen();
     expect(screen.getByTestId('tab-home')).toBeOnTheScreen();
+  });
+
+  it('shows the unit count as the Cart badge only when the cart has items', async () => {
+    useSessionStore.setState({ hasSeenWelcome: true });
+    useCartStore.setState({ items: [] });
+    await renderWithProviders(<TabsLayout />);
+    expect(screen.getByTestId('tab-cart')).toHaveTextContent(/^cart$/);
+    const product = new MockStore({ latencyMs: [0, 0] }).products.find((p) => p.stock >= 5)!;
+    await act(async () => {
+      useCartStore.getState().add(product, 3);
+    });
+    expect(screen.getByTestId('tab-cart')).toHaveTextContent('cart:3');
   });
 });
