@@ -5,9 +5,9 @@
 
 ## Avance
 
-`█████░░░░░░░░░` 5/14 fases terminadas (36 %)
+`█████▒░░░░░░░░` 5/14 fases terminadas (36 %)
 
-**Fase actual:** Fase 06 · Catálogo (⏳ sin empezar)
+**Fase actual:** Fase 06 · Catálogo (🚧 en progreso)
 **Última actualización:** 2026-09-30
 **Ventana planificada:** semana 2 (5 – 11 oct 2026), compartida con Rutta. `v1.0.0` como tarde el **2026-10-11**.
 
@@ -20,7 +20,7 @@
 | 03 | Dominio | `feat/fase-03-dominio` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 04 | Backend local | `feat/fase-04-backend-local` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 05 | Modo demo | `feat/fase-05-modo-demo` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
-| 06 | Catálogo | `feat/fase-06-catalogo` | ⏳ Pendiente | — | — | — |
+| 06 | Catálogo | `feat/fase-06-catalogo` | 🚧 En progreso | 2026-09-30 | — | — |
 | 07 | Carrito | `feat/fase-07-carrito` | ⏳ Pendiente | — | — | — |
 | 08 | Auth y cuenta | `feat/fase-08-auth-y-cuenta` | ⏳ Pendiente | — | — | — |
 | 09 | Pedidos | `feat/fase-09-pedidos` | ⏳ Pendiente | — | — | — |
