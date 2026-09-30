@@ -5,9 +5,9 @@
 
 ## Avance
 
-`█████░░░░░░░░░` 5/14 fases terminadas (36 %)
+`██████░░░░░░░░` 6/14 fases terminadas (43 %)
 
-**Fase actual:** Fase 06 · Catálogo (⏳ sin empezar)
+**Fase actual:** Fase 07 · Carrito (⏳ sin empezar)
 **Última actualización:** 2026-09-30
 **Ventana planificada:** semana 2 (5 – 11 oct 2026), compartida con Rutta. `v1.0.0` como tarde el **2026-10-11**.
 
@@ -20,7 +20,7 @@
 | 03 | Dominio | `feat/fase-03-dominio` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 04 | Backend local | `feat/fase-04-backend-local` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 05 | Modo demo | `feat/fase-05-modo-demo` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
-| 06 | Catálogo | `feat/fase-06-catalogo` | ⏳ Pendiente | — | — | — |
+| 06 | Catálogo | `feat/fase-06-catalogo` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 07 | Carrito | `feat/fase-07-carrito` | ⏳ Pendiente | — | — | — |
 | 08 | Auth y cuenta | `feat/fase-08-auth-y-cuenta` | ⏳ Pendiente | — | — | — |
 | 09 | Pedidos | `feat/fase-09-pedidos` | ⏳ Pendiente | — | — | — |
@@ -72,6 +72,13 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** número o "ver historial de `main`".
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino) o para el autor.
+
+### Fase 06 · Catálogo — 2026-09-30
+- **Hecho:** `product.mapper.ts` + `SupabaseProductsRepository` (filtros, `escapeLike`, orden con desempates, paginación con fila extra, `notFound`, `getByIds` vacío sin petición) registrado en `createLiveRepositories` (se quitó `unavailableProducts`); `scripts/upload-product-images.mjs` + `npm run images:upload`; hooks (`use-catalog-filters`, `use-products`, `use-categories`, `use-product`, `useDebouncedValue`); componentes (`ProductCard`, `CategoryChips`, `SearchBar`, `ProductGridSkeleton`, `ProductGallery`); pantallas Catálogo (FlashList 2 columnas, pull to refresh, pie de error de paginación), Filtros (`src/app/filters.tsx`, modal) y Detalle (`src/app/product/[id].tsx`, "Add to cart" deshabilitado hasta la fase 07); `AppStack` en `_layout` con cabeceras; `AppText` admite `tone="warning"`; utilidades de test `fake-supabase`, `flash-list-mock`, `expo-image-mock`, `expo-router-mock`.
+- **Verificación:** `lint`, `typecheck`, `format:check`, `test --ci` en verde (38 suites, 372+ tests); `supabase db reset && supabase test db` (82/82, sin cambios de BD). `images:upload` subió 40 imágenes y `curl -I` devuelve 200. Emulador `Pixel_10_Pro`: demo (20 productos, filtros In stock + Price ↓ aplicados con `dismissTo` y contador, detalle con stepper) e invitado contra Supabase local (consulta con `order=created_at.desc,id.asc&limit=21`, imágenes desde Storage); con Supabase detenido aparece "You're offline" + Retry, y Retry funciona al volver a arrancarlo. Emulador limpio (`pm clear`, `adb reverse` eliminado, Metro detenido). Docker: Vitrina detenido y Rutta reiniciado como al empezar.
+- **PR:** ver historial de `main`.
+- **Decisiones:** ver tabla (desempates SQL, error de paginación, `dismissTo`, mocks de test).
+- **Pendientes:** ninguno para el autor. Sin revisar manualmente: modo oscuro en las pantallas nuevas (usan solo tokens; revisión en fase 12), deslizar la galería y "Load more" en emulador (cubiertos por tests). Fase 07 conecta "Add to cart" (F4 CA2).
 
 ### Fase 05 · Modo demo — 2026-09-30
 - **Hecho:** `scripts/generate-product-images.mjs` (sharp) → 40 WebP (< 10 KB c/u) en `assets/products/` + `product-images.generated.ts`; fixtures (`demoCategories`, `buildDemoProducts`, `DEMO_USER`, `DEMO_PROFILE`, `buildSampleOrders`) con test de paridad contra `supabase/seed.sql`; `MockStore` (+ `clone`) con las reglas de `create_order`, máquina de estados y ciclo `paid → shipped → delivered`; 5 repos mock (products, checkout, orders, auth, profile) con tests y suite de contrato `src/test/contracts/orders-repository.contract.ts`; `src/core/di` (`RepositoryProvider`, `useRepositories`, `createMockRepositories`, `createLiveRepositories` con stubs "Not available yet"); `session.store` persistido (`vitrina-session`) + `useIsDemo` + `useSessionHydrated`; rutas base (`_layout`, `(auth)/sign-in`, `(tabs)` con 4 pestañas y `testID`, `+not-found`); Sign in con *Explore demo* y *Continue as guest*; `DemoBanner`; pantallas provisionales; kitchen sink borrado; `renderWithProviders` acepta `repositories`/`store`.
@@ -160,6 +167,11 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 | 2026-09-30 | 05 | Los tipos de rutas (`.expo/types/router.d.ts`, gitignored) se regeneraron arrancando `expo start`; en CI, sin ese archivo, `tsc` pasa igualmente (comprobado). | `typedRoutes: true` rechazaba `'/sign-in'` con los tipos antiguos. |
 | 2026-09-30 | 05 | Tagline de Sign in: "Thoughtful goods for your everyday." (el archivo de fase no fija el texto). `useSessionHydrated` usa `useSyncExternalStore`. `data/` de las features importa `MockStore` de `features/demo/data` (excepción razonable a "data no importa otros features"). El mock de `MockStore` usa un `clone` propio (preserva `Date`) en lugar de `structuredClone`. | Decisiones menores de implementación. |
 | 2026-09-30 | 05 | El `.env` local tiene Stripe vacío (no `pk_test_placeholder` como decía la fase 04); para ver Sign in en el emulador se sobrescribieron `EXPO_PUBLIC_FORCE_DEMO=false` y la clave de Stripe por variables de shell al lanzar Metro. `.env` no se modificó. | Evita tocar la configuración local del autor. |
+| 2026-09-30 | 06 | La consulta de `price_asc`/`price_desc` ordena por `price_cents`, `created_at desc`, `id` (el archivo de fase solo decía precio + id). | Coincide con `compareProducts` y con la nota de la fase 04; paginación estable. |
+| 2026-09-30 | 06 | En el catálogo, `ErrorState` a pantalla completa solo si `isError && !data`: un fallo de `fetchNextPage` también pone `isError`, pero se conservan las páginas y se muestra "Couldn't load more · Retry". | Comportamiento de TanStack Query v5 descubierto con un test. |
+| 2026-09-30 | 06 | `router.dismissTo({ pathname: '/', params })` funciona en Expo Router 57 (comprobado en emulador); se envían todas las claves con `undefined` para borrar las vaciadas. En Android el modal se ve como pantalla normal con cabecera. | Según el archivo de fase; sin necesidad de `navigate`. |
+| 2026-09-30 | 06 | Mocks de test añadidos en `jest.setup.js`: FlashList (`src/test/flash-list-mock.tsx`, expone `onEndReached`/`onRefresh` como props), `expo-image` y `expo-router` (`src/test/expo-router-mock.ts`, con search params reales). Claves de lista de galería con índice porque en Jest todos los assets resuelven a la misma URI. | FlashList 2.0.2 `jestSetup` roto; `useLocalSearchParams` necesita estado para probar búsqueda y filtros. |
+| 2026-09-30 | 06 | `clearFilters` borra todo, incluido `q`. La cantidad máxima usa `MAX_QTY_PER_LINE` de `cart/domain`. `.env.scripts` local (no commiteado) con la secret key local. | Decisión por defecto del archivo de fase; evita duplicar la constante. |
 
 ## Bloqueos
 

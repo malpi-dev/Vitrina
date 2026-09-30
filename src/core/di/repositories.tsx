@@ -5,6 +5,7 @@ import { MockProfileRepository } from '@/features/account/data/mock-profile.repo
 import type { ProfileRepository } from '@/features/account/domain/profile.repository';
 import { MockAuthRepository } from '@/features/auth/data/mock-auth.repository';
 import type { AuthRepository } from '@/features/auth/domain/auth.repository';
+import { SupabaseProductsRepository } from '@/features/catalog/data/supabase-products.repository';
 import { MockProductsRepository } from '@/features/catalog/data/mock-products.repository';
 import type { ProductsRepository } from '@/features/catalog/domain/products.repository';
 import { MockCheckoutRepository } from '@/features/checkout/data/mock-checkout.repository';
@@ -17,7 +18,6 @@ import {
   unavailableAuth,
   unavailableCheckout,
   unavailableOrders,
-  unavailableProducts,
   unavailableProfile,
 } from './unavailable-repositories';
 
@@ -41,9 +41,9 @@ export function createMockRepositories(store: MockStore): Repositories {
 }
 
 /** Supabase implementations arrive phase by phase; the rest are "Not available yet" stubs. */
-export function createLiveRepositories(_client: VitrinaSupabaseClient): Repositories {
+export function createLiveRepositories(client: VitrinaSupabaseClient): Repositories {
   return {
-    products: unavailableProducts,
+    products: new SupabaseProductsRepository(client),
     checkout: unavailableCheckout,
     orders: unavailableOrders,
     auth: unavailableAuth,
