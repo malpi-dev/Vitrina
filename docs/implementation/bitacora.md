@@ -5,9 +5,9 @@
 
 ## Avance
 
-`█▒░░░░░░░░░░░░` 1/14 fases terminadas (7 %)
+`██░░░░░░░░░░░░` 2/14 fases terminadas (14 %)
 
-**Fase actual:** Fase 02 · Core (🚧 en progreso)
+**Fase actual:** Fase 03 · Dominio (⏳ sin empezar)
 **Última actualización:** 2026-09-30
 **Ventana planificada:** semana 2 (5 – 11 oct 2026), compartida con Rutta. `v1.0.0` como tarde el **2026-10-11**.
 
@@ -16,7 +16,7 @@
 | # | Fase | Rama | Estado | Inicio | Fin | PR |
 |---|---|---|---|---|---|---|
 | 01 | Andamiaje | `feat/fase-01-andamiaje` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
-| 02 | Core | `feat/fase-02-core` | 🚧 En progreso | 2026-09-30 | — | — |
+| 02 | Core | `feat/fase-02-core` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 03 | Dominio | `feat/fase-03-dominio` | ⏳ Pendiente | — | — | — |
 | 04 | Backend local | `feat/fase-04-backend-local` | ⏳ Pendiente | — | — | — |
 | 05 | Modo demo | `feat/fase-05-modo-demo` | ⏳ Pendiente | — | — | — |
@@ -73,6 +73,13 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino) o para el autor.
 
+### Fase 02 · Core — 2026-09-30
+- **Hecho:** `DomainError` (unión discriminada) + `mapSupabaseError` + mensajes por código; `formatMoney`/`isValidCents`; tema (tokens, store persistido `vitrina-theme`, `ThemeGate` con StatusBar y `expo-system-ui`); contraste AA con test; UI base (AppText, Price, Screen, Button, Card, Skeleton, EmptyState, ErrorState, Badge, TextField, QuantityStepper, Toast); cliente Supabase (schema `vitrina`) + `run()`; QueryClient (`createQueryClient`, reintentos solo `network`/`unknown`, handler de `unauthorized`), `queryKeys`, NetInfo/AppState; layout raíz con fuentes y providers; kitchen sink temporal en `src/app/index.tsx`; `renderWithProviders`, mock de Reanimated y `jest.setup-after-env.js`.
+- **Verificación:** `lint`, `typecheck`, `format:check`, `test --ci` en verde (111 tests). Kitchen sink revisado en `Pixel_10_Pro` en claro y oscuro (vía selector del tema); se corrigió un bug visual real (texto oscuro sobre botones sólidos).
+- **PR:** ver historial de `main`.
+- **Decisiones:** ver tabla (contraste, `createQueryClient`, `onPrimary`).
+- **Pendientes:** ninguno para el autor. El kitchen sink se elimina en la fase 05.
+
 ### Fase 01 · Andamiaje — 2026-09-30
 - **Hecho:** proyecto Expo SDK 57 (plantilla `default`, sin ejemplo), `app.json` (scheme, package, plugin de Stripe), dependencias de runtime y dev, TS strict, NativeWind 4 con tokens claro/oscuro, ESLint con reglas de arquitectura + Prettier, Jest, estructura de carpetas, `env.ts`, `.env.example`/`.env.scripts.example`, CI, development build Android.
 - **Verificación:** `lint`, `typecheck`, `format:check`, `test --ci` (1 test) en verde. Regla de arquitectura comprobada (Supabase en `core/ui` y en `domain/` falla) y revertida. Dev build instalado en `Pixel_10_Pro`; fondo medido por captura: #FAF7F2 en claro y #14110F en oscuro, "Vitrina" en `primary`.
@@ -114,6 +121,10 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 | 2026-09-30 | 01 | `README.md` provisional mínimo (el de la plantilla de Expo se descartó); `LICENSE` reemplazada por MIT 2026 José Malpica. | La guía pide no dejar la licencia de Expo; README completo en fase 14. |
 | 2026-09-30 | 01 | `npm install` se ejecutó con `NPM_CONFIG_CACHE` temporal por un error EACCES en `~/.npm/_cacache`. | Problema local del entorno, no del repo. |
 | 2026-09-30 | 01 | `npx expo run:android` se ejecutó con `--no-bundler`; Metro se levantó aparte. `.env` local con `EXPO_PUBLIC_FORCE_DEMO=true`. | Permite iterar sin bloquear la terminal. |
+| 2026-09-30 | 02 | Contraste AA: `primary` claro `#C4552D` → `#BB512B` (blanco 4,48 → 4,86:1; sobre marfil `background` 4,20 → 4,54:1) y `warning` claro `#B7791F` → `#A16B1B` (3,64 → 4,53:1 sobre `surface`). Se actualizaron `global.css` y `tokens.ts`. Modo oscuro sin cambios. | El test exige ≥ 4,5 y fallaron; `primary` sobre `background` se añadió como par porque el precio/enlaces van también sobre el fondo. Esto cambia el `primary` de la definición §11 y de la tabla de la fase 12. |
+| 2026-09-30 | 02 | `query-client.ts` exporta `createQueryClient()` además del singleton `queryClient`. | Permite probar reintentos y el handler de `unauthorized` con instancias aisladas. |
+| 2026-09-30 | 02 | `AppText` admite además `tone="onPrimary"`; `ErrorState` muestra "Retry" solo si hay `onRetry`; el toast usa `toast.store.ts` con `show(message, tone)`. | El texto de `Button` sólido con `text-text` ganaba a `text-on-primary` (visto en emulador); el resto sigue el archivo de fase. |
+| 2026-09-30 | 02 | Tipos `Database` de Supabase aún no existen: el cliente no está tipado hasta la fase 04. | Según el archivo de fase. |
 
 ## Bloqueos
 

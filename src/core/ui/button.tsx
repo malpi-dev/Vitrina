@@ -57,8 +57,7 @@ export function Button({
           {icon ? <Ionicons name={icon} size={18} color={foreground} /> : null}
           <AppText
             variant="label"
-            tone={variant === 'ghost' ? 'primary' : 'default'}
-            className={solid ? 'text-on-primary' : ''}
+            tone={solid ? 'onPrimary' : variant === 'ghost' ? 'primary' : 'default'}
           >
             {title}
           </AppText>
