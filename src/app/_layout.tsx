@@ -26,6 +26,7 @@ import { ToastHost } from '@/core/ui';
 import { useAuthStore } from '@/features/auth/presentation/auth.store';
 import { useAuthBootstrap } from '@/features/auth/presentation/hooks/use-auth-bootstrap';
 import { useUnauthorizedHandler } from '@/features/auth/presentation/hooks/use-unauthorized-handler';
+import { PaymentPresenterRoot } from '@/features/checkout/presentation/payment/payment-presenter';
 import { MockStore } from '@/features/demo/data/mock-store';
 
 void SplashScreen.preventAutoHideAsync();
@@ -47,6 +48,16 @@ function AppStack() {
       <Stack.Screen
         name="account/address"
         options={{ ...headerOptions, title: 'Default address' }}
+      />
+      <Stack.Screen name="checkout/index" options={{ ...headerOptions, title: 'Checkout' }} />
+      <Stack.Screen
+        name="checkout/simulated-payment"
+        options={{
+          ...headerOptions,
+          title: 'Simulated payment',
+          presentation: 'modal',
+          contentStyle: { backgroundColor: colors.background },
+        }}
       />
       <Stack.Screen
         name="filters"
@@ -93,7 +104,7 @@ export default function RootLayout() {
   useAuthBootstrap(isDemo ? null : repositories.auth);
   useUnauthorizedHandler(repositories.auth);
 
-  useEffect(() => setupQueryManagers(), []);
+  useEffect(() => setupQueryManagers(isDemo), [isDemo]);
 
   useEffect(() => {
     if (ready) void SplashScreen.hideAsync();
@@ -107,7 +118,9 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <ThemeGate>
             <RepositoryProvider repositories={repositories}>
-              <AppStack />
+              <PaymentPresenterRoot>
+                <AppStack />
+              </PaymentPresenterRoot>
             </RepositoryProvider>
             <ToastHost />
           </ThemeGate>

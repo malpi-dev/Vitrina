@@ -22,6 +22,8 @@ export const routerMock = {
   back: jest.fn(),
   canGoBack: jest.fn(() => true),
   navigate: jest.fn(),
+  /** Records the `href` of every rendered `<Redirect>`. */
+  redirect: jest.fn(),
   dismissTo: jest.fn(),
   setParams: jest.fn((next: Params) => {
     params = compact({ ...params, ...next });
@@ -34,7 +36,14 @@ export const routerMock = {
   },
   reset() {
     params = {};
-    for (const fn of [this.push, this.replace, this.back, this.navigate, this.dismissTo]) {
+    for (const fn of [
+      this.push,
+      this.replace,
+      this.back,
+      this.navigate,
+      this.dismissTo,
+      this.redirect,
+    ]) {
       fn.mockClear();
     }
     this.canGoBack.mockReset();
@@ -54,5 +63,8 @@ export const expoRouterMock = {
   /** Runs the effect on mount (the screen is always "focused" in tests). */
   useFocusEffect: (effect: () => void | (() => void)) => useEffect(effect, [effect]),
   Stack: { Screen: () => null },
-  Redirect: () => null,
+  Redirect: ({ href }: { href: unknown }) => {
+    routerMock.redirect(href);
+    return null;
+  },
 };

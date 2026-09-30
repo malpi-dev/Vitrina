@@ -5,9 +5,9 @@
 
 ## Avance
 
-`█████████░░░░░` 9/14 fases terminadas (64 %)
+`██████████░░░░` 10/14 fases terminadas (71 %)
 
-**Fase actual:** Fase 10 · Checkout demo (⏳ sin empezar)
+**Fase actual:** Fase 11 · Pagos con Stripe (⏳ sin empezar)
 **Última actualización:** 2026-09-30
 **Ventana planificada:** semana 2 (5 – 11 oct 2026), compartida con Rutta. `v1.0.0` como tarde el **2026-10-11**.
 
@@ -24,7 +24,7 @@
 | 07 | Carrito | `feat/fase-07-carrito` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 08 | Auth y cuenta | `feat/fase-08-auth-y-cuenta` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 09 | Pedidos | `feat/fase-09-pedidos` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
-| 10 | Checkout demo | `feat/fase-10-checkout-demo` | ⏳ Pendiente | — | — | — |
+| 10 | Checkout demo | `feat/fase-10-checkout-demo` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 11 | Pagos con Stripe | `feat/fase-11-pagos-stripe` | ⏳ Pendiente | — | — | — |
 | 12 | Pulido | `feat/fase-12-pulido` | ⏳ Pendiente | — | — | — |
 | 13 | E2E y CI | `feat/fase-13-e2e-y-ci` | ⏳ Pendiente | — | — | — |
@@ -72,6 +72,13 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** número o "ver historial de `main`".
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino) o para el autor.
+
+### Fase 10 · Checkout demo — 2026-09-30
+- **Hecho:** `payment/` (`PaymentPresenterContext` + `usePaymentPresenter` en `payment-presenter-context.ts`, `PaymentPresenterRoot` que elige `SimulatedPaymentProvider` (demo) o `StripePaymentProvider` (marcador live: "Card payments are not configured yet"), `simulated-payment.store` no persistido con `settle` de una sola vez); `SimulatedPaymentScreen` (modal `checkout/simulated-payment`: aviso, total, tarjeta •••• 4242, "Pay (simulated)" con 1 s de spinner, "Simulate failure", cancelar al cerrar, `back()` si no es demo o no hay pago pendiente); `use-checkout-flow` (`startCheckout` -> confirmación de total con `Alert` -> `present` -> `reportPaymentResult` (errores ignorados) -> `clearCart` + invalidar pedidos + `router.replace('/orders/<id>')`); `CheckoutScreen` (gate `useRequireSession`, redirección de carrito vacío, `DemoBanner`, `AddressForm` precargado con skeleton, resumen, "Pay $X.XX", banners `canceled`/`failed`/stock/`network`/`validation`); `AddressForm` admite `footer`; rutas `checkout/index` y `checkout/simulated-payment` en el Stack; `PaymentPresenterRoot` en `_layout`; quitado el cast `as never` del botón Checkout; `renderWithProviders` acepta `paymentPresenter` y el mock de router registra `<Redirect>`.
+- **Verificación:** `lint`, `typecheck`, `format:check`, `test --ci` en verde (61 suites, 538 tests). No se tocó la BD (sin pgTAP ni Supabase local). Emulador `Pixel_10_Pro`, demo **en modo avión**: Explore demo -> producto -> carrito -> Checkout (banner demo, "Demo Shopper" precargado, "Pay $25.99" = total) -> hoja simulada -> "Simulate failure" -> banner "Card declined (simulated)" con carrito intacto; cerrar la hoja con atrás -> banner "Payment canceled — your cart is intact"; "Pay (simulated)" -> "Confirming payment…" -> Paid -> Shipped -> Delivered solos (F6 CA7, F7 CA4), carrito vacío, pedido en Orders, y el producto comprado (stock 3, cantidad 3) pasa a "Out of stock" en el catálogo. Emulador limpio (`pm clear`, modo avión desactivado, `adb reverse` eliminado, Metro detenido). Docker no se tocó (Rutta seguía corriendo como al empezar; no se usó Supabase local).
+- **PR:** #10.
+- **Decisiones:** ver tabla (queries en demo sin conexión, scroll a banners, invalidar catálogo, `router.replace` con string).
+- **Pendientes:** ninguno para el autor. Sin probar en emulador: modo oscuro de checkout/hoja (tokens; fase 12), errores `outOfStock`/`network`/total distinto (solo tests), gate de invitado (tests). Fase 11 implementa `StripePaymentProvider` y `CheckoutRepository` live. Observación: el hueco entre la cabecera nativa y el contenido (`Screen` aplica inset superior bajo la cabecera) se ve igual en otras pantallas con cabecera; revisar en fase 12.
 
 ### Fase 09 · Pedidos — 2026-09-30
 - **Hecho:** `order.mapper.ts` + `SupabaseOrdersRepository` (`list`, `getById` con `notFound`, `subscribe` con `postgres_changes`, canales `vitrina:orders:<uid>` / `vitrina:order:<id>`, `setAuth`, sin carreras al desuscribir) registrado en `createLiveRepositories` (se quitó `unavailableOrders`; solo queda el stub de checkout); `fake-supabase` ampliado (canales, `removeChannel`, `realtime.setAuth` con pausa/fallo, `setSessionUser`); hooks `useOrders`, `useOrder`, `useOrdersLive`, `useOrderLive` (+ `use-order-subscription.ts` compartido: actualiza detalle y lista, antepone pedidos nuevos, invalida al volver de `paused`); componentes `OrderStatusBadge`, `OrderRow`, `OrderTimeline`, `LiveIndicator`; pantallas Orders (FlashList, refresco, skeleton, vacío, error, invitado) y detalle (`src/app/orders/[id].tsx`: estado, línea de tiempo, líneas congeladas, dirección, totales, pista de 30 s, `notFound`, error).
@@ -203,6 +210,11 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 | 2026-09-30 | 08 | `src/app/account/address.tsx` con cabecera propia "Default address" en `AppStack`; `/verify` en `(auth)/verify.tsx`. Los tests de pantallas de auth/cuenta mockean `@/core/config/env` con `isDemoForced: false` (en Jest es `true` por no haber backend configurado). | Sin el mock `useSessionMode` siempre devolvía `demo`. |
 | 2026-09-30 | 09 | `useOrder` no define `retry` propio: usa el del `QueryClient` (solo reintenta `network`/`unknown`, así `notFound` no se reintenta). Un `retry` propio pisaba el de los tests y de la app. | El archivo de fase pedía "sin reintentos para `notFound`"; el valor por defecto ya lo cumple. |
 | 2026-09-30 | 09 | En RNTL 14 `act` es asíncrono: los tests de hooks usan `await act(...)` y, con fake timers, un `advanceTimersByTimeAsync(1)` extra para vaciar el lote de notificaciones de TanStack Query. | Sin ello los cambios de caché no se veían en pantalla dentro del test. |
+| 2026-09-30 | 10 | `setupQueryManagers(isDemo)`: en demo `onlineManager` se fija en online y no escucha NetInfo. | Sin ello, con modo avión TanStack Query pausaba las consultas (detalle de producto en skeleton infinito) y el demo no funcionaba sin red (F2 CA1); encontrado en emulador. |
+| 2026-09-30 | 10 | El checkout hace scroll al inicio (`Screen` con `scrollRef`) cuando aparece un banner de cancelado/fallo/error, tras un `requestAnimationFrame` y sin animación. | El botón Pay está al final del formulario y los banners arriba: el usuario no los veía (visto en emulador). |
+| 2026-09-30 | 10 | Tras `startCheckout` se invalidan `products`, `product` y `products-by-ids`; al pagar con éxito el flujo usa `router.replace(`/orders/${id}`)` (string) y marca el estado `succeeded` antes de vaciar el carrito. | El stock queda reservado y el catálogo mostraba datos viejos; la marca evita que el redirect de carrito vacío compita con la navegación al pedido. |
+| 2026-09-30 | 10 | El botón "Pay $X.XX" es el submit de `AddressForm` (`submitTestID="pay-button"`) y el resumen entra por un nuevo prop `footer`. | Mantiene el orden dirección -> resumen -> botón sin duplicar el formulario. |
+| 2026-09-30 | 10 | `PaymentPresenterContext`/`usePaymentPresenter` viven en `payment-presenter-context.ts` (reexportados desde `payment-presenter.tsx`); los tests y `renderWithProviders` importan el contexto. | Evita ciclo de imports con los proveedores y que `renderWithProviders` arrastre `expo-router`. |
 
 ## Bloqueos
 
