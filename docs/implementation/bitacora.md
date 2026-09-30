@@ -5,9 +5,9 @@
 
 ## Avance
 
-`████▒░░░░░░░░░` 4/14 fases terminadas (29 %)
+`█████░░░░░░░░░` 5/14 fases terminadas (36 %)
 
-**Fase actual:** Fase 05 · Modo demo (🚧 en progreso)
+**Fase actual:** Fase 06 · Catálogo (⏳ sin empezar)
 **Última actualización:** 2026-09-30
 **Ventana planificada:** semana 2 (5 – 11 oct 2026), compartida con Rutta. `v1.0.0` como tarde el **2026-10-11**.
 
@@ -19,7 +19,7 @@
 | 02 | Core | `feat/fase-02-core` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 03 | Dominio | `feat/fase-03-dominio` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 04 | Backend local | `feat/fase-04-backend-local` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
-| 05 | Modo demo | `feat/fase-05-modo-demo` | 🚧 En progreso | 2026-09-30 | — | — |
+| 05 | Modo demo | `feat/fase-05-modo-demo` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 06 | Catálogo | `feat/fase-06-catalogo` | ⏳ Pendiente | — | — | — |
 | 07 | Carrito | `feat/fase-07-carrito` | ⏳ Pendiente | — | — | — |
 | 08 | Auth y cuenta | `feat/fase-08-auth-y-cuenta` | ⏳ Pendiente | — | — | — |
@@ -72,6 +72,13 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** número o "ver historial de `main`".
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino) o para el autor.
+
+### Fase 05 · Modo demo — 2026-09-30
+- **Hecho:** `scripts/generate-product-images.mjs` (sharp) → 40 WebP (< 10 KB c/u) en `assets/products/` + `product-images.generated.ts`; fixtures (`demoCategories`, `buildDemoProducts`, `DEMO_USER`, `DEMO_PROFILE`, `buildSampleOrders`) con test de paridad contra `supabase/seed.sql`; `MockStore` (+ `clone`) con las reglas de `create_order`, máquina de estados y ciclo `paid → shipped → delivered`; 5 repos mock (products, checkout, orders, auth, profile) con tests y suite de contrato `src/test/contracts/orders-repository.contract.ts`; `src/core/di` (`RepositoryProvider`, `useRepositories`, `createMockRepositories`, `createLiveRepositories` con stubs "Not available yet"); `session.store` persistido (`vitrina-session`) + `useIsDemo` + `useSessionHydrated`; rutas base (`_layout`, `(auth)/sign-in`, `(tabs)` con 4 pestañas y `testID`, `+not-found`); Sign in con *Explore demo* y *Continue as guest*; `DemoBanner`; pantallas provisionales; kitchen sink borrado; `renderWithProviders` acepta `repositories`/`store`.
+- **Verificación:** `lint`, `typecheck`, `format:check`, `test --ci` en verde (34 suites, 335 tests). No se tocó la BD (no se ejecutó pgTAP). Emulador `Pixel_10_Pro` (Metro con `EXPO_PUBLIC_FORCE_DEMO=false` y Stripe placeholder vía variables de shell): tras `pm clear` aparece Sign in → Explore demo → Home con 20 productos (primera página) y 4 pestañas → Account con banner → matar y reabrir entra directo a las pestañas en demo → Exit demo vuelve a Sign in. Emulador dejado limpio (datos de la app borrados, `adb reverse` eliminado, Metro detenido).
+- **PR:** ver historial de `main`.
+- **Decisiones:** ver tabla (tests de rutas, rutas tipadas, tagline, verificación manual parcial).
+- **Pendientes:** ninguno para el autor. Paso 9 puntos 4 (demo forzado) y 5 (modo avión) solo cubiertos por tests unitarios, no manualmente. Fase 07 debe añadir `clearCart()` en `useDemoActions`.
 
 ### Fase 04 · Backend local — 2026-09-30
 - **Hecho:** `supabase init` + `config.toml` (schema `vitrina` expuesto, confirmación de email, rate limit local, plantilla OTP local); 4 migraciones (`20261005000100…0400`: schema/enum/tablas/índices/grants, RLS con `comment on policy`, triggers + RPCs, publicación Realtime de `orders` + bucket público `vitrina-products`); `src/features/demo/data/fixtures/catalog.json` (5 categorías, 30 productos) y `scripts/generate-seed.mjs` → `supabase/seed.sql`; `supabase/scripts/advance-order.sql`; suite pgTAP `supabase/tests/vitrina.test.sql` (82 asserts, 24 casos); tipos generados `src/core/supabase/database.generated.ts` y cliente `createClient<Database, 'vitrina'>`; scripts `db:seed:generate`, `db:types`, `db:advance`; test Jest de forma del catálogo y paridad con el seed.
@@ -149,6 +156,10 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 | 2026-09-30 | 04 | En pgTAP, "cantidad mayor que el stock" usa 6 (stock 5), no 5: `create_order` cancela primero el pendiente del propio llamante y le devuelve el stock, así que pedir justo el stock reservado es válido. Se añadió un assert del desempate `order by created_at desc, id asc`. | Comportamiento correcto de la regla 5; el desempate documenta la desviación de la fase 03. |
 | 2026-09-30 | 04 | Se añadió `src/features/demo/data/__tests__/catalog.test.ts` (forma del catálogo, casos de stock y presencia de ids/precios en `seed.sql`). | Anticipa el test de paridad seed ↔ JSON del plan sin depender de la fase 05. |
 | 2026-09-30 | 04 | `.env` local (no commiteado) apunta a `http://10.0.2.2:54321` + publishable key local, con `EXPO_PUBLIC_FORCE_DEMO=true` y Stripe `pk_test_placeholder`. `db:types` genera sin formatear (Prettier e ESLint lo ignoran). | Según el archivo de fase. |
+| 2026-09-30 | 05 | Los tests de rutas viven en `src/test/routes/` (no en `src/app/`), y el test de pantallas usa `jest.mock('expo-router')` en vez de `renderRouter`. | Todo archivo en `src/app/` es una ruta de Expo Router; mockear `useRouter` es más simple y estable. |
+| 2026-09-30 | 05 | Los tipos de rutas (`.expo/types/router.d.ts`, gitignored) se regeneraron arrancando `expo start`; en CI, sin ese archivo, `tsc` pasa igualmente (comprobado). | `typedRoutes: true` rechazaba `'/sign-in'` con los tipos antiguos. |
+| 2026-09-30 | 05 | Tagline de Sign in: "Thoughtful goods for your everyday." (el archivo de fase no fija el texto). `useSessionHydrated` usa `useSyncExternalStore`. `data/` de las features importa `MockStore` de `features/demo/data` (excepción razonable a "data no importa otros features"). El mock de `MockStore` usa un `clone` propio (preserva `Date`) en lugar de `structuredClone`. | Decisiones menores de implementación. |
+| 2026-09-30 | 05 | El `.env` local tiene Stripe vacío (no `pk_test_placeholder` como decía la fase 04); para ver Sign in en el emulador se sobrescribieron `EXPO_PUBLIC_FORCE_DEMO=false` y la clave de Stripe por variables de shell al lanzar Metro. `.env` no se modificó. | Evita tocar la configuración local del autor. |
 
 ## Bloqueos
 
