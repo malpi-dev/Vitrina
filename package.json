@@ -69,7 +69,10 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "db:seed:generate": "node scripts/generate-seed.mjs",
+    "db:types": "supabase gen types typescript --local --schema vitrina > src/core/supabase/database.generated.ts",
+    "db:advance": "psql postgresql://postgres:postgres@127.0.0.1:54322/postgres -f supabase/scripts/advance-order.sql"
   },
   "private": true
 }

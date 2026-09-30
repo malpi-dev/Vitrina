@@ -5,9 +5,9 @@
 
 ## Avance
 
-`███░░░░░░░░░░░` 3/14 fases terminadas (21 %)
+`████░░░░░░░░░░` 4/14 fases terminadas (29 %)
 
-**Fase actual:** Fase 04 · Backend local (⏳ sin empezar)
+**Fase actual:** Fase 05 · Modo demo (⏳ sin empezar)
 **Última actualización:** 2026-09-30
 **Ventana planificada:** semana 2 (5 – 11 oct 2026), compartida con Rutta. `v1.0.0` como tarde el **2026-10-11**.
 
@@ -18,7 +18,7 @@
 | 01 | Andamiaje | `feat/fase-01-andamiaje` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 02 | Core | `feat/fase-02-core` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 03 | Dominio | `feat/fase-03-dominio` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
-| 04 | Backend local | `feat/fase-04-backend-local` | ⏳ Pendiente | — | — | — |
+| 04 | Backend local | `feat/fase-04-backend-local` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 05 | Modo demo | `feat/fase-05-modo-demo` | ⏳ Pendiente | — | — | — |
 | 06 | Catálogo | `feat/fase-06-catalogo` | ⏳ Pendiente | — | — | — |
 | 07 | Carrito | `feat/fase-07-carrito` | ⏳ Pendiente | — | — | — |
@@ -48,7 +48,7 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 | zustand | 5.0.15 |
 | zod | 4.6.5 |
 | @shopify/flash-list | 2.0.2 |
-| Supabase CLI | 2.118.0 |
+| Supabase CLI | 2.118.0 (Postgres local 17.6) |
 | Stripe CLI | 1.52.0 |
 | Deno | no instalado (se necesita en la fase 11) |
 | Maestro | 2.10.0 |
@@ -72,6 +72,13 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** número o "ver historial de `main`".
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino) o para el autor.
+
+### Fase 04 · Backend local — 2026-09-30
+- **Hecho:** `supabase init` + `config.toml` (schema `vitrina` expuesto, confirmación de email, rate limit local, plantilla OTP local); 4 migraciones (`20261005000100…0400`: schema/enum/tablas/índices/grants, RLS con `comment on policy`, triggers + RPCs, publicación Realtime de `orders` + bucket público `vitrina-products`); `src/features/demo/data/fixtures/catalog.json` (5 categorías, 30 productos) y `scripts/generate-seed.mjs` → `supabase/seed.sql`; `supabase/scripts/advance-order.sql`; suite pgTAP `supabase/tests/vitrina.test.sql` (82 asserts, 24 casos); tipos generados `src/core/supabase/database.generated.ts` y cliente `createClient<Database, 'vitrina'>`; scripts `db:seed:generate`, `db:types`, `db:advance`; test Jest de forma del catálogo y paridad con el seed.
+- **Verificación:** `lint`, `typecheck`, `format:check`, `test --ci` en verde (254 tests, 4 nuevos); `supabase db reset && supabase test db` en verde (82/82). Comprobado por `psql`: 6 tablas con RLS, 30 productos, 5 categorías, bucket público, `orders` en `supabase_realtime`, todas las funciones con `search_path`. API como `anon`: búsqueda `mug` → 3 productos (Ivory, Terracotta, Insulated Travel). OTP local: correo con código de 6 dígitos en Mailpit, `verify` → sesión, `ensure_profile` y `create_order` vía REST (incluido error `outOfStock` con `details` = ids). `npm run db:advance` probado a mano (`paid → shipped → delivered` y rechazo de `delivered → shipped`).
+- **PR:** ver historial de `main`.
+- **Decisiones:** ver tabla (puertos locales, `revoke` también a `service_role`, `outOfStock` tras cancelación perezosa, test de desempate, `.env` local).
+- **Pendientes:** ninguno para el autor. Fase 06: la consulta de productos debe usar `order by created_at desc, id asc` (`newest`) y `price_cents, created_at desc, id asc` (`price_*`; en `price_desc` el precio va descendente y el resto igual que `price_asc`) para coincidir con `compareProducts`. La subida de imágenes a Storage es de la fase 06. Estado Docker al cerrar: Supabase de Vitrina detenido (`supabase stop`, con backup) y el de Rutta vuelto a arrancar como estaba al empezar (Agendo y Centavo no estaban corriendo).
 
 ### Fase 03 · Dominio — 2026-09-30
 - **Hecho:** dominio puro de `catalog` (Category, Product, `parseProductFilters`/`toProductSearchParams`/`hasActiveFilters`/`matchesFilters`/`compareProducts`, `ProductsRepository`), `cart` (CartItem, ShippingPolicy, `calculateCartTotals`, `addToCart`/`updateQuantity`/`removeItem`, `reconcileCart`), `checkout` (`shippingAddressSchema`, `validateCheckoutItems`, PaymentOutcome, CheckoutSession, `CheckoutRepository`), `orders` (`canTransition`, Order, `buildOrderTimeline`, `OrdersRepository`), `auth` (AuthUser, esquemas de email/OTP, `AuthRepository`) y `account` (Profile, `fullNameSchema`, `ProfileRepository`).
@@ -136,6 +143,12 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 | 2026-09-30 | 03 | `parseProductFilters`: `min`/`max` solo aceptan enteros no negativos (`1.5` se ignora); `category` se valida con una regex UUID laxa (sin exigir versión/variante); `toProductSearchParams` convierte centavos a dólares con `Math.round`. | El archivo de fase dice "dólares enteros" y "uuid"; la regex laxa evita rechazar UUID de fixtures no RFC. |
 | 2026-09-30 | 03 | `addToCart` con línea existente por encima del límite (p. ej. el stock bajó) devuelve `rejected/lineFull`; `updateQuantity` con id desconocido o cantidad no finita devuelve el mismo array. `reconcileCart` emite `priceChanged` antes de `quantityAdjusted` en una misma línea y trata `stock <= 0` como `outOfStock`. | El archivo de fase no especificaba estos bordes. |
 | 2026-09-30 | 03 | `shippingAddressSchema`: `line2`/`phone` vacíos o en blanco pasan a `undefined` mediante `refine` + `transform` (no `z.preprocess`), manteniendo la clave opcional en el tipo inferido. `validateCheckoutItems` lanza `DomainError({ code: 'validation', fields: { items } })`. | Zod 4.6.5; el tipo de `ShippingAddress` queda con `line2?`/`phone?`. |
+| 2026-09-30 | 04 | Para liberar los puertos locales (54321–54324) se ejecutó `supabase stop --project-id rutta` (con backup) y, al terminar, se reinició Rutta y se detuvo Vitrina. | Agendo, Centavo y Rutta comparten puertos; la guía §4.3 pide detener solo los otros proyectos. |
+| 2026-09-30 | 04 | `supabase start` falla con el schema `vitrina` expuesto si aún no existen las migraciones (PostgREST no carga la caché): se crearon las migraciones antes del primer arranque. `extra_search_path` se dejó en `["public", "extensions"]`, sin `vitrina`. | Orden de trabajo; el cliente siempre usa `.schema('vitrina')`. |
+| 2026-09-30 | 04 | El `revoke execute` de la migración 3 incluye también a `service_role`, y luego se concede solo a las funciones indicadas. | El archivo de fase solo revocaba a `public`/`anon`/`authenticated`, pero Supabase concede por defecto a `service_role`; el criterio de terminado pide acceso solo al rol indicado. `postgres` (dueño) conserva acceso. |
+| 2026-09-30 | 04 | En pgTAP, "cantidad mayor que el stock" usa 6 (stock 5), no 5: `create_order` cancela primero el pendiente del propio llamante y le devuelve el stock, así que pedir justo el stock reservado es válido. Se añadió un assert del desempate `order by created_at desc, id asc`. | Comportamiento correcto de la regla 5; el desempate documenta la desviación de la fase 03. |
+| 2026-09-30 | 04 | Se añadió `src/features/demo/data/__tests__/catalog.test.ts` (forma del catálogo, casos de stock y presencia de ids/precios en `seed.sql`). | Anticipa el test de paridad seed ↔ JSON del plan sin depender de la fase 05. |
+| 2026-09-30 | 04 | `.env` local (no commiteado) apunta a `http://10.0.2.2:54321` + publishable key local, con `EXPO_PUBLIC_FORCE_DEMO=true` y Stripe `pk_test_placeholder`. `db:types` genera sin formatear (Prettier e ESLint lo ignoran). | Según el archivo de fase. |
 
 ## Bloqueos
 
