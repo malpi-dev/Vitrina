@@ -5,9 +5,9 @@
 
 ## Avance
 
-`░░░░░░░░░░░░░░` 0/14 fases terminadas (0 %)
+`█░░░░░░░░░░░░░` 1/14 fases terminadas (7 %)
 
-**Fase actual:** Fase 01 · Andamiaje (⏳ sin empezar)
+**Fase actual:** Fase 02 · Core (⏳ sin empezar)
 **Última actualización:** 2026-09-30
 **Ventana planificada:** semana 2 (5 – 11 oct 2026), compartida con Rutta. `v1.0.0` como tarde el **2026-10-11**.
 
@@ -15,7 +15,7 @@
 
 | # | Fase | Rama | Estado | Inicio | Fin | PR |
 |---|---|---|---|---|---|---|
-| 01 | Andamiaje | `feat/fase-01-andamiaje` | ⏳ Pendiente | — | — | — |
+| 01 | Andamiaje | `feat/fase-01-andamiaje` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 02 | Core | `feat/fase-02-core` | ⏳ Pendiente | — | — | — |
 | 03 | Dominio | `feat/fase-03-dominio` | ⏳ Pendiente | — | — | — |
 | 04 | Backend local | `feat/fase-04-backend-local` | ⏳ Pendiente | — | — | — |
@@ -38,21 +38,21 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 
 | Paquete / herramienta | Versión |
 |---|---|
-| Expo SDK | — |
-| React Native | — |
-| Expo Router | — |
-| NativeWind / Tailwind | — |
-| @supabase/supabase-js | — |
-| @stripe/stripe-react-native | — |
-| @tanstack/react-query | — |
-| zustand | — |
-| zod | — |
-| @shopify/flash-list | — |
-| Supabase CLI | — |
-| Stripe CLI | — |
-| Deno | — |
-| Maestro | — |
-| Node | — |
+| Expo SDK | 57.0.26 |
+| React Native | 0.86.3 |
+| Expo Router | 57.0.24 |
+| NativeWind / Tailwind | 4.2.7 / 3.4.19 |
+| @supabase/supabase-js | 2.117.2 |
+| @stripe/stripe-react-native | 0.64.0 |
+| @tanstack/react-query | 5.104.0 |
+| zustand | 5.0.15 |
+| zod | 4.6.5 |
+| @shopify/flash-list | 2.0.2 |
+| Supabase CLI | 2.118.0 |
+| Stripe CLI | 1.52.0 |
+| Deno | no instalado (se necesita en la fase 11) |
+| Maestro | 2.10.0 |
+| Node | v24.15.0 (CI usa 22) |
 
 ## Pendientes del autor (🙋)
 
@@ -73,7 +73,12 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino) o para el autor.
 
-_Sin entradas todavía._
+### Fase 01 · Andamiaje — 2026-09-30
+- **Hecho:** proyecto Expo SDK 57 (plantilla `default`, sin ejemplo), `app.json` (scheme, package, plugin de Stripe), dependencias de runtime y dev, TS strict, NativeWind 4 con tokens claro/oscuro, ESLint con reglas de arquitectura + Prettier, Jest, estructura de carpetas, `env.ts`, `.env.example`/`.env.scripts.example`, CI, development build Android.
+- **Verificación:** `lint`, `typecheck`, `format:check`, `test --ci` (1 test) en verde. Regla de arquitectura comprobada (Supabase en `core/ui` y en `domain/` falla) y revertida. Dev build instalado en `Pixel_10_Pro`; fondo medido por captura: #FAF7F2 en claro y #14110F en oscuro, "Vitrina" en `primary`.
+- **PR:** ver historial de `main`.
+- **Decisiones:** ver tabla (npm cache, AGENTS.md, plantilla).
+- **Pendientes:** ninguno para el autor. Deno no está instalado (fase 11).
 
 ## Decisiones y desviaciones respecto a la definición
 
@@ -105,6 +110,10 @@ _Sin entradas todavía._
 | 2026-09-30 | Plan | El presentador de pago se entrega por contexto (`PaymentPresenterRoot` → proveedor demo o `StripePaymentProvider`), no con un `if` dentro de un hook. | `useStripe()` exige `StripeProvider`, que solo se monta en live; un hook condicional rompería las reglas de hooks. |
 | 2026-09-30 | Plan | Canales de Realtime: `vitrina:orders:<uid>` (lista) y `vitrina:order:<orderId>` (detalle). | Convención `<app>:<tema>:<id>` de `CLAUDE.md`; la definición solo nombraba el de la lista. |
 | 2026-09-30 | Plan | El webhook registra el evento en `stripe_events` **antes** de procesarlo y, si el procesamiento falla, borra la fila y responde 500 para que Stripe reintente. Eventos sin `metadata.order_id` se ignoran. | Idempotencia sin perder eventos cuando falla la RPC (`mark_order_paid` ya es idempotente). |
+| 2026-09-30 | 01 | Se conservan `AGENTS.md`, `CLAUDE.md` (`@AGENTS.md`), `.claude/` y `.vscode/` que trae la plantilla, igual que Agendo. Plantilla trajo `@expo/ui`, `expo-glass-effect`, `expo-device`, etc.; se dejan (mismas que Agendo). | Coherencia con Agendo; se podan en el pulido si sobran. |
+| 2026-09-30 | 01 | `README.md` provisional mínimo (el de la plantilla de Expo se descartó); `LICENSE` reemplazada por MIT 2026 José Malpica. | La guía pide no dejar la licencia de Expo; README completo en fase 14. |
+| 2026-09-30 | 01 | `npm install` se ejecutó con `NPM_CONFIG_CACHE` temporal por un error EACCES en `~/.npm/_cacache`. | Problema local del entorno, no del repo. |
+| 2026-09-30 | 01 | `npx expo run:android` se ejecutó con `--no-bundler`; Metro se levantó aparte. `.env` local con `EXPO_PUBLIC_FORCE_DEMO=true`. | Permite iterar sin bloquear la terminal. |
 
 ## Bloqueos
 
