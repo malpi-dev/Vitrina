@@ -10,10 +10,13 @@ import {
   ErrorState,
   Price,
   QuantityStepper,
+  showToast,
   Skeleton,
 } from '@/core/ui';
 
-import { MAX_QTY_PER_LINE } from '@/features/cart/domain/cart-item';
+import { MAX_LINES, MAX_QTY_PER_LINE } from '@/features/cart/domain/cart-item';
+import type { AddToCartResult } from '@/features/cart/domain/add-to-cart';
+import { useCartStore } from '@/features/cart/presentation/cart.store';
 
 import { ProductGallery } from '../components/product-gallery';
 import { useCategories } from '../hooks/use-categories';
@@ -34,12 +37,37 @@ function DetailSkeleton() {
   );
 }
 
+function announceAddResult(result: AddToCartResult): void {
+  switch (result.outcome) {
+    case 'added':
+    case 'merged':
+      showToast('Added to cart', 'success');
+      return;
+    case 'clamped':
+      showToast(
+        `Only ${result.quantity} available — cart updated to ${result.quantity}`,
+        'warning',
+      );
+      return;
+    case 'rejected':
+      if (result.reason === 'lineFull') {
+        showToast('You already have the maximum for this item', 'warning');
+      } else if (result.reason === 'tooManyLines') {
+        showToast(`Your cart is full (${MAX_LINES} items max)`, 'warning');
+      } else {
+        showToast('Out of stock', 'danger');
+      }
+  }
+}
+
 export default function ProductDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const product = useProduct(id);
   const categories = useCategories();
   const [quantity, setQuantity] = useState(1);
+  const add = useCartStore((s) => s.add);
+  const inCart = useCartStore((s) => s.items.find((i) => i.productId === id)?.quantity ?? 0);
 
   if (product.isPending) {
     return (
@@ -76,7 +104,9 @@ export default function ProductDetailScreen() {
 
   const { data } = product;
   const soldOut = data.stock <= 0;
-  const maxQuantity = Math.max(1, Math.min(data.stock, MAX_QTY_PER_LINE));
+  const limit = Math.min(data.stock, MAX_QTY_PER_LINE);
+  const maxQuantity = Math.max(1, limit - inCart);
+  const maxInCart = !soldOut && inCart >= limit;
   const categoryName = categories.data?.find((c) => c.id === data.categoryId)?.name;
   const stockText = soldOut
     ? 'Out of stock'
@@ -119,12 +149,14 @@ export default function ProductDetailScreen() {
             />
           </View>
         ) : null}
-        {/* Wired to the cart in phase 07. */}
         <Button
-          title={soldOut ? 'Out of stock' : 'Add to cart'}
+          title={soldOut ? 'Out of stock' : maxInCart ? 'Max in cart' : 'Add to cart'}
           testID="add-to-cart-button"
-          disabled
-          onPress={() => {}}
+          disabled={soldOut || maxInCart}
+          onPress={() => {
+            announceAddResult(add(data, Math.min(quantity, maxQuantity)));
+            setQuantity(1);
+          }}
         />
       </View>
     </ScrollView>
