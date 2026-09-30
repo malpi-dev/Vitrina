@@ -5,8 +5,10 @@ import { AppState } from 'react-native';
 
 import { env } from '@/core/config/env';
 
+import type { Database } from './database.generated';
+
 function createVitrinaClient(url: string, key: string) {
-  return createClient(url, key, {
+  return createClient<Database, 'vitrina'>(url, key, {
     db: { schema: 'vitrina' },
     auth: {
       storage: AsyncStorage,
@@ -21,7 +23,7 @@ export type VitrinaSupabaseClient = ReturnType<typeof createVitrinaClient>;
 
 let client: VitrinaSupabaseClient | null = null;
 
-/** Lazy singleton. Typed with the generated database types from phase 04. */
+/** Lazy singleton, typed with the generated `vitrina` schema types (`npm run db:types`). */
 export function getSupabaseClient(): VitrinaSupabaseClient {
   if (client) return client;
 
