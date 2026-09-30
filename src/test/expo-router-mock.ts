@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 
 type Params = Record<string, string | string[] | undefined>;
 type Listener = () => void;
@@ -48,6 +48,8 @@ const subscribe = (listener: Listener) => {
 export const expoRouterMock = {
   useRouter: () => routerMock,
   useLocalSearchParams: () => useSyncExternalStore(subscribe, () => params),
+  /** Runs the effect on mount (the screen is always "focused" in tests). */
+  useFocusEffect: (effect: () => void | (() => void)) => useEffect(effect, [effect]),
   Stack: { Screen: () => null },
   Redirect: () => null,
 };
