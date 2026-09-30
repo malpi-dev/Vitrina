@@ -5,9 +5,9 @@
 
 ## Avance
 
-`███████░░░░░░░` 7/14 fases terminadas (50 %)
+`███████▒░░░░░░` 7/14 fases terminadas (50 %)
 
-**Fase actual:** Fase 08 · Auth y cuenta (⏳ sin empezar)
+**Fase actual:** Fase 08 · Auth y cuenta (🚧 en progreso)
 **Última actualización:** 2026-09-30
 **Ventana planificada:** semana 2 (5 – 11 oct 2026), compartida con Rutta. `v1.0.0` como tarde el **2026-10-11**.
 
@@ -22,7 +22,7 @@
 | 05 | Modo demo | `feat/fase-05-modo-demo` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 06 | Catálogo | `feat/fase-06-catalogo` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 07 | Carrito | `feat/fase-07-carrito` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
-| 08 | Auth y cuenta | `feat/fase-08-auth-y-cuenta` | ⏳ Pendiente | — | — | — |
+| 08 | Auth y cuenta | `feat/fase-08-auth-y-cuenta` | 🚧 En progreso | 2026-09-30 | — | — |
 | 09 | Pedidos | `feat/fase-09-pedidos` | ⏳ Pendiente | — | — | — |
 | 10 | Checkout demo | `feat/fase-10-checkout-demo` | ⏳ Pendiente | — | — | — |
 | 11 | Pagos con Stripe | `feat/fase-11-pagos-stripe` | ⏳ Pendiente | — | — | — |
