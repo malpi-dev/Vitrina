@@ -1,8 +1,10 @@
 import { createContext, useContext, type ReactNode } from 'react';
 
 import type { VitrinaSupabaseClient } from '@/core/supabase';
+import { SupabaseProfileRepository } from '@/features/account/data/supabase-profile.repository';
 import { MockProfileRepository } from '@/features/account/data/mock-profile.repository';
 import type { ProfileRepository } from '@/features/account/domain/profile.repository';
+import { SupabaseAuthRepository } from '@/features/auth/data/supabase-auth.repository';
 import { MockAuthRepository } from '@/features/auth/data/mock-auth.repository';
 import type { AuthRepository } from '@/features/auth/domain/auth.repository';
 import { SupabaseProductsRepository } from '@/features/catalog/data/supabase-products.repository';
@@ -14,12 +16,7 @@ import type { MockStore } from '@/features/demo/data/mock-store';
 import { MockOrdersRepository } from '@/features/orders/data/mock-orders.repository';
 import type { OrdersRepository } from '@/features/orders/domain/orders.repository';
 
-import {
-  unavailableAuth,
-  unavailableCheckout,
-  unavailableOrders,
-  unavailableProfile,
-} from './unavailable-repositories';
+import { unavailableCheckout, unavailableOrders } from './unavailable-repositories';
 
 // Composition root: the only place in core/ that imports from features/*/data.
 export interface Repositories {
@@ -46,8 +43,8 @@ export function createLiveRepositories(client: VitrinaSupabaseClient): Repositor
     products: new SupabaseProductsRepository(client),
     checkout: unavailableCheckout,
     orders: unavailableOrders,
-    auth: unavailableAuth,
-    profile: unavailableProfile,
+    auth: new SupabaseAuthRepository(client),
+    profile: new SupabaseProfileRepository(client),
   };
 }
 
