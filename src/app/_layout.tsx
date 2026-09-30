@@ -21,11 +21,37 @@ import { createLiveRepositories, createMockRepositories, RepositoryProvider } fr
 import { queryClient, setupQueryManagers } from '@/core/query';
 import { useIsDemo, useSessionHydrated, useSessionStore } from '@/core/session';
 import { getSupabaseClient } from '@/core/supabase';
-import { ThemeGate } from '@/core/theme';
+import { ThemeGate, useThemeColors } from '@/core/theme';
 import { ToastHost } from '@/core/ui';
 import { MockStore } from '@/features/demo/data/mock-store';
 
 void SplashScreen.preventAutoHideAsync();
+
+/** The root stack. Detail and filters show a native header; everything else brings its own. */
+function AppStack() {
+  const colors = useThemeColors();
+  const headerOptions = {
+    headerShown: true,
+    title: '',
+    headerShadowVisible: false,
+    headerStyle: { backgroundColor: colors.background },
+    headerTintColor: colors.text,
+  } as const;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="product/[id]" options={headerOptions} />
+      <Stack.Screen
+        name="filters"
+        options={{
+          ...headerOptions,
+          title: 'Filters',
+          presentation: 'modal',
+          contentStyle: { backgroundColor: colors.background },
+        }}
+      />
+    </Stack>
+  );
+}
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useSerifFonts({
@@ -67,7 +93,7 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <ThemeGate>
             <RepositoryProvider repositories={repositories}>
-              <Stack screenOptions={{ headerShown: false }} />
+              <AppStack />
             </RepositoryProvider>
             <ToastHost />
           </ThemeGate>

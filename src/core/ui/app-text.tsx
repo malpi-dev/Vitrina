@@ -1,7 +1,8 @@
 import { Text, type TextProps } from 'react-native';
 
 export type TextVariant = 'display' | 'title' | 'subtitle' | 'body' | 'caption' | 'label';
-export type TextTone = 'default' | 'muted' | 'primary' | 'danger' | 'success' | 'onPrimary';
+export type TextTone =
+  'default' | 'muted' | 'primary' | 'danger' | 'success' | 'warning' | 'onPrimary';
 
 const VARIANT_CLASS: Record<TextVariant, string> = {
   display: 'font-serif text-3xl',
@@ -18,6 +19,7 @@ const TONE_CLASS: Record<TextTone, string> = {
   primary: 'text-primary',
   danger: 'text-danger',
   success: 'text-success',
+  warning: 'text-warning',
   onPrimary: 'text-on-primary',
 };
 
