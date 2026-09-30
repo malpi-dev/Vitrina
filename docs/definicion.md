@@ -4,11 +4,11 @@
 |---|---|
 | **Tagline** | Tienda móvil con catálogo, carrito persistente y checkout real con Stripe (modo test) |
 | **Stack** | React Native · Expo (SDK estable más reciente) · Expo Router · TypeScript strict · Supabase · Stripe |
-| **Plataforma** | Android (objetivo principal) · iOS si es posible |
+| **Plataforma** | Android (v1.0.0) · iOS fuera de la v1.0.0 (código compatible, no verificado) |
 | **Estado** | 📋 Planificado |
 | **Versión del documento** | 1.0 |
 | **Fecha** | 2026-09-25 |
-| **Bundle id / package** | `com.malpidev.vitrina` *(propuesta)* |
+| **Bundle id / package** | `com.malpidev.vitrina` *(confirmado)* |
 
 > Este documento define **qué** se construye y qué no. Es la base del plan de implementación, no el plan.
 > Las reglas de `../CLAUDE.md` (arquitectura, stack, backend, seguridad, convenciones) son obligatorias y
@@ -475,8 +475,8 @@ limpiar los pedidos caducados justo antes de reservar.
 
 - Método (convención común de las 4 apps): **email + código OTP de 6 dígitos** — `signInWithOtp({ email, options: { shouldCreateUser: true } })`
   + `verifyOtp({ email, token, type: 'email' })`. Sin contraseñas ni magic link (`auth.users` es compartido con las otras apps).
-- Configuración compartida del proyecto: "Confirm email" activado, plantilla de email genérica con `{{ .Token }}`, SMTP
-  propio en remoto. En local los correos llegan a la bandeja de Supabase (Inbucket/Mailpit).
+- Configuración compartida del proyecto: "Confirm email" activado, plantilla de email genérica con `{{ .Token }}`,
+  SMTP por defecto de Supabase (solo entrega a miembros del equipo; ver `CLAUDE.md`). En local los correos llegan a la bandeja de Supabase (Inbucket/Mailpit).
 - El perfil **no** se crea con un trigger sobre `auth.users`: ese trigger se ejecutaría con los registros de Agendo,
   Centavo y Rutta. En su lugar, tras verificar el código la app llama a la RPC `vitrina.ensure_profile()`
   (`security definer`, idempotente), único camino para crear perfiles.
@@ -704,7 +704,7 @@ a instalar Expo Router a mano. Si `create-expo-app` se niega porque el directori
 mover `docs/` temporalmente fuera, crear el proyecto y devolverlo.
 
 Luego, en `app.json`/`app.config.ts`: `name: "Vitrina"`, `slug: "vitrina"`, `scheme: "vitrina"`,
-`android.package` / `ios.bundleIdentifier`: `com.malpidev.vitrina` (propuesta), `userInterfaceStyle: "automatic"`.
+`android.package` / `ios.bundleIdentifier`: `com.malpidev.vitrina` (confirmado), `userInterfaceStyle: "automatic"`.
 
 **2. Dependencias**
 ```bash
@@ -904,7 +904,7 @@ SUPABASE_SECRET_KEY=
 ## 16. Definición de terminado
 
 Para pasar a ✅ **MVP listo**:
-- [ ] F1–F8 cumplen sus criterios de aceptación en Android (y en iOS si es posible).
+- [ ] F1–F8 cumplen sus criterios de aceptación en Android.
 - [ ] Pago real en modo test de extremo a extremo: PaymentSheet → webhook → `paid` en vivo sin refrescar.
 - [ ] El importe cobrado en Stripe siempre coincide con el `total_cents` calculado en el servidor.
 - [ ] Modo demo completo sin backend (probado en modo avión), incluido el pago simulado y los estados que avanzan solos.
@@ -930,7 +930,7 @@ repo público y tabla de `CLAUDE.md` / `README.md` actualizada.
 | Stripe exige development build: más tiempo de compilación y posibles fallos nativos | Generar el dev build el día 1 de la semana 2, antes de escribir el checkout; mantener el modo demo operativo en todo momento. |
 | El webhook no llega (URL mal configurada, firma incorrecta, JWT activado) y el pedido se queda en "Confirming payment…" | `verify_jwt = false` solo en esa función; probar primero con `stripe listen`; mensaje "Taking longer than usual" en la UI. |
 | Pago tardío sobre un pedido ya expirado o reemplazado | `mark_order_paid` intenta re-reservar stock. Si no hay, el pedido queda registrado para reembolso manual (en modo test no hay dinero real). Documentado en el README. |
-| Configuración de Auth compartida entre las 4 apps | Resuelto en `CLAUDE.md`: OTP por email, "Confirm email" activado, plantilla genérica, SMTP propio en remoto. |
+| Configuración de Auth compartida entre las 4 apps | Resuelto en `CLAUDE.md`: OTP por email, "Confirm email" activado, plantilla genérica, SMTP por defecto de Supabase. |
 | Nombres globales en el proyecto compartido (funciones, buckets, canales, secretos) | Convención de `CLAUDE.md`: prefijo `vitrina-` en funciones y bucket, `vitrina:` en canales, `VITRINA_` en secretos. |
 | Maestro en CI con emulador es lento o inestable | Ejecutarlo en local y documentarlo; CI solo con lint + tests si hace falta. |
 | NativeWind y la versión del SDK desalineadas | Seguir la guía oficial de NativeWind para el SDK elegido y fijar versiones. |
@@ -939,7 +939,7 @@ repo público y tabla de `CLAUDE.md` / `README.md` actualizada.
 **Supuestos**
 - La cuenta de Stripe es nueva, en modo test, sin activar pagos reales.
 - Existe el proyecto Supabase compartido con el schema `vitrina` expuesto.
-- Android es la plataforma principal. iOS depende de tener Mac + simulador y del tiempo disponible.
+- Solo Android en v1.0.0 (sin cuenta de Apple Developer).
 - Un solo comercio, una moneda (USD) y envío nacional ficticio.
 
 **Decisiones tomadas en este documento (no venían de `CLAUDE.md`), a revisar**
@@ -954,9 +954,12 @@ repo público y tabla de `CLAUDE.md` / `README.md` actualizada.
 9. Los repositorios lanzan `DomainError` (en vez de devolver `Result`) — adoptado como regla 6 del `CLAUDE.md`.
 10. Tarjeta como único método de pago (`allow_redirects: 'never'`).
 
+**Decisiones cerradas (2026-09-25)**
+- Solo Android en v1.0.0; bundle id `com.malpidev.vitrina` confirmado.
+- SMTP por defecto de Supabase (sin dominio propio).
+
 **Decisiones abiertas**
 - ¿pgTAP para los tests de BD o scripts SQL simples? Propuesta: scripts SQL simples; pgTAP si sobra tiempo.
-- ¿Publicar también un build iOS (simulador) o solo Android?
 - ¿Imágenes propias (generadas o fotografiadas) o de un banco con licencia libre? Hay que verificar la licencia antes de publicar.
 
 ---
