@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
@@ -46,3 +47,12 @@ export const useSessionStore = create<SessionState>()(
 
 /** Demo is on when forced by the environment (no backend configured) or chosen by the user. */
 export const useIsDemo = (): boolean => useSessionStore((s) => isDemoForced || s.isDemo);
+
+/** True once the persisted session has been read from storage (avoids flashing Sign in on launch). */
+export function useSessionHydrated(): boolean {
+  return useSyncExternalStore(
+    (onChange) => useSessionStore.persist.onFinishHydration(onChange),
+    () => useSessionStore.persist.hasHydrated(),
+    () => false,
+  );
+}
