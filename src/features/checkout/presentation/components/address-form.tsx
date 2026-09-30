@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import type { ReactNode } from 'react';
 import { Controller, useForm, type Path } from 'react-hook-form';
 import type { TextInputProps } from 'react-native';
 import { View } from 'react-native';
@@ -17,6 +18,8 @@ interface AddressFormProps {
   submitLabel: string;
   submitTestID?: string;
   loading?: boolean;
+  /** Rendered between the fields and the submit button (e.g. the checkout summary). */
+  footer?: ReactNode;
   onSubmit: (address: ShippingAddress) => void;
 }
 
@@ -70,6 +73,7 @@ export function AddressForm({
   submitLabel,
   submitTestID = 'save-address-button',
   loading = false,
+  footer,
   onSubmit,
 }: AddressFormProps) {
   const { control, handleSubmit } = useForm<AddressFormValues, unknown, ShippingAddress>({
@@ -106,6 +110,7 @@ export function AddressForm({
           )}
         />
       ))}
+      {footer}
       <Button
         title={submitLabel}
         testID={submitTestID}

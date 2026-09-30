@@ -139,8 +139,7 @@ export default function CartScreen() {
           title={checking ? 'Checking prices…' : 'Checkout'}
           testID="checkout-button"
           disabled={checking || items.length === 0}
-          // The checkout route arrives in phase 10.
-          onPress={() => router.push('/checkout' as never)}
+          onPress={() => router.push('/checkout')}
           className="mt-2"
         />
       </View>
