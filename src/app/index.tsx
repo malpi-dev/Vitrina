@@ -1,9 +1,1 @@
-import { Text, View } from 'react-native';
-
-export default function Index() {
-  return (
-    <View className="flex-1 items-center justify-center bg-background">
-      <Text className="text-3xl text-primary">Vitrina</Text>
-    </View>
-  );
-}
+export { default } from '@/core/ui/__dev__/kitchen-sink';
