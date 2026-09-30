@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 
 import { AppText } from '@/core/ui';
@@ -15,6 +15,10 @@ interface OtpInputProps {
 /** One hidden TextInput (keyboard, paste, SMS autofill) rendered as six boxes. */
 export function OtpInput({ value, onChange, editable = true, hasError = false }: OtpInputProps) {
   const inputRef = useRef<TextInput>(null);
+  // Disabling the input while verifying drops focus on Android: take it back afterwards.
+  useEffect(() => {
+    if (editable) inputRef.current?.focus();
+  }, [editable]);
   const activeIndex = Math.min(value.length, OTP_LENGTH - 1);
 
   return (
