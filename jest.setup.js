@@ -20,3 +20,9 @@ jest.mock('react-native-reanimated', () => {
     LinearTransition: animation,
   };
 });
+
+// FlashList 2.0.x ships a broken jestSetup: render every row with a plain View instead.
+jest.mock('@shopify/flash-list', () => require('./src/test/flash-list-mock'));
+
+// expo-image is a native view: stand in with a plain View that keeps the props tests may inspect.
+jest.mock('expo-image', () => require('./src/test/expo-image-mock'));

@@ -1,6 +1,7 @@
 import { renderHook } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 
+import { SupabaseProductsRepository } from '@/features/catalog/data/supabase-products.repository';
 import { MockStore } from '@/features/demo/data/mock-store';
 import { renderWithProviders } from '@/test/render-with-providers';
 import { Text } from 'react-native';
@@ -31,9 +32,10 @@ describe('repositories', () => {
     await expect(repos.profile.getMine()).resolves.toMatchObject({ fullName: 'Demo Shopper' });
   });
 
-  it('createLiveRepositories returns stubs that fail with "Not available yet"', async () => {
+  it('createLiveRepositories wires Supabase products and "Not available yet" stubs for the rest', async () => {
     const repos = createLiveRepositories({} as VitrinaSupabaseClient);
-    await expect(repos.products.list({ sort: 'newest' })).rejects.toMatchObject({
+    expect(repos.products).toBeInstanceOf(SupabaseProductsRepository);
+    await expect(repos.profile.getMine()).rejects.toMatchObject({
       info: { code: 'unknown' },
       message: 'Not available yet',
     });
