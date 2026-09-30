@@ -35,13 +35,12 @@ describe('PaymentPresenterRoot', () => {
     await expect(outcome).resolves.toEqual({ status: 'succeeded' });
   });
 
-  it('live: the placeholder reports that cards are not configured yet', async () => {
+  it('live: presents the Stripe PaymentSheet (no simulated sheet)', async () => {
     useSessionStore.setState({ isDemo: false });
     const { result } = await renderHook(() => usePaymentPresenter(), { wrapper });
-    await expect(result.current.present({ orderId: 'o1', totalCents: 100 })).resolves.toEqual({
-      status: 'failed',
-      reason: 'Card payments are not configured yet',
-    });
+    await expect(
+      result.current.present({ orderId: 'o1', clientSecret: 'pi_1_secret_x', totalCents: 100 }),
+    ).resolves.toEqual({ status: 'succeeded' });
     expect(routerMock.push).not.toHaveBeenCalled();
   });
 });

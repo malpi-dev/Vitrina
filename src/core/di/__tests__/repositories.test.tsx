@@ -1,6 +1,7 @@
 import { renderHook } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 
+import { SupabaseCheckoutRepository } from '@/features/checkout/data/supabase-checkout.repository';
 import { SupabaseOrdersRepository } from '@/features/orders/data/supabase-orders.repository';
 import { SupabaseProductsRepository } from '@/features/catalog/data/supabase-products.repository';
 import { MockStore } from '@/features/demo/data/mock-store';
@@ -35,13 +36,13 @@ describe('repositories', () => {
     await expect(repos.profile.getMine()).resolves.toMatchObject({ fullName: 'Demo Shopper' });
   });
 
-  it('createLiveRepositories wires the Supabase repositories and a "Not available yet" stub for checkout', async () => {
+  it('createLiveRepositories wires the Supabase repositories', async () => {
     const repos = createLiveRepositories({} as VitrinaSupabaseClient);
     expect(repos.products).toBeInstanceOf(SupabaseProductsRepository);
     expect(repos.auth).toBeInstanceOf(SupabaseAuthRepository);
     expect(repos.profile).toBeInstanceOf(SupabaseProfileRepository);
     expect(repos.orders).toBeInstanceOf(SupabaseOrdersRepository);
-    await expect(repos.checkout.startCheckout({} as never)).rejects.toThrow('Not available yet');
+    expect(repos.checkout).toBeInstanceOf(SupabaseCheckoutRepository);
   });
 
   it('useRepositories throws outside the provider', async () => {

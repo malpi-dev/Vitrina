@@ -26,3 +26,12 @@ jest.mock('@shopify/flash-list', () => require('./src/test/flash-list-mock'));
 
 // expo-image is a native view: stand in with a plain View that keeps the props tests may inspect.
 jest.mock('expo-image', () => require('./src/test/expo-image-mock'));
+
+// Stripe is a native module: stand in with a provider that renders its children and a resolving sheet.
+jest.mock('@stripe/stripe-react-native', () => ({
+  StripeProvider: ({ children }) => children,
+  useStripe: () => ({
+    initPaymentSheet: jest.fn(async () => ({})),
+    presentPaymentSheet: jest.fn(async () => ({})),
+  }),
+}));
