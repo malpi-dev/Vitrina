@@ -36,7 +36,7 @@ export function ProductGallery({ imageUrls, name }: ProductGalleryProps) {
             <View
               key={`${i}-${url}`}
               testID={`gallery-dot-${i}`}
-              className={`size-2 rounded-full ${i === index ? 'bg-primary' : 'bg-border'}`}
+              className={`size-2 rounded-full ${i === index ? 'bg-primary' : 'bg-text-muted opacity-60'}`}
             />
           ))}
         </View>
