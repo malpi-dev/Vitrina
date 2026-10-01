@@ -1,0 +1,65 @@
+appId: com.malpidev.vitrina
+name: Live checkout (Stripe test mode) - manual/local, NOT run in CI
+# Prerequisites (see README, "Testing"):
+#   - Supabase local running with seed data (supabase start && supabase db reset) and `npm run images:upload`.
+#   - `supabase functions serve --env-file supabase/functions/.env`
+#   - `stripe listen --forward-to http://127.0.0.1:54321/functions/v1/vitrina-stripe-webhook`
+#     (its whsec_ goes in supabase/functions/.env; restart `functions serve` afterwards).
+#   - A release/dev build with EXPO_PUBLIC_FORCE_DEMO=false, EXPO_PUBLIC_SUPABASE_URL=http://10.0.2.2:54321,
+#     the local publishable key and a REAL pk_test_ key.
+#   - Test user shopper@vitrina.dev (created on first sign-in).
+# Manual variants (not automated): card 4000 0000 0000 0002 (declined) and 4000 0000 0000 9995 (insufficient funds).
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: 'continue-as-guest-button'
+- tapOn:
+    id: 'product-card-00000000-0000-4000-8000-000000000207' # Ivory Stoneware Mug
+- tapOn:
+    id: 'add-to-cart-button'
+- back
+- tapOn:
+    id: 'tab-cart'
+- tapOn:
+    id: 'checkout-button' # guests are sent to Sign in and come back to checkout afterwards
+- tapOn:
+    id: 'email-input'
+- inputText: 'shopper@vitrina.dev'
+- tapOn:
+    id: 'send-code-button'
+- extendedWaitUntil:
+    visible:
+      id: 'otp-input'
+    timeout: 15000
+- runScript: scripts/read-otp.js
+- tapOn:
+    id: 'otp-input'
+- inputText: ${output.code}
+- extendedWaitUntil:
+    visible:
+      id: 'pay-button'
+    timeout: 15000
+- tapOn:
+    id: 'pay-button'
+# The PaymentSheet is native Stripe UI. Fields are located by their label text.
+- tapOn: 'Pay' # confirmation Alert with the total
+- extendedWaitUntil:
+    visible: 'Card number'
+    timeout: 20000
+- tapOn: 'Card number'
+- inputText: '4242424242424242'
+- tapOn: 'MM / YY'
+- inputText: '1234'
+- tapOn: 'CVC'
+- inputText: '123'
+- hideKeyboard
+- tapOn: 'ZIP'
+- inputText: '12345'
+- hideKeyboard
+- scrollUntilVisible:
+    element: 'Pay \$.*'
+- tapOn: 'Pay \$.*'
+- extendedWaitUntil:
+    visible: 'Paid'
+    timeout: 30000

@@ -1,0 +1,40 @@
+appId: com.malpidev.vitrina
+name: Demo checkout (simulated payment)
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: 'explore-demo-button'
+- tapOn:
+    id: 'search-input'
+- inputText: 'mug'
+- hideKeyboard
+- extendedWaitUntil:
+    visible:
+      id: 'product-card-00000000-0000-4000-8000-000000000207' # Ivory Stoneware Mug
+    timeout: 10000
+- tapOn:
+    id: 'product-card-00000000-0000-4000-8000-000000000207'
+- tapOn:
+    id: 'add-to-cart-button'
+- assertVisible: 'Added to cart'
+- back
+- tapOn:
+    id: 'tab-cart'
+- tapOn:
+    id: 'checkout-button'
+- assertVisible:
+    id: 'demo-banner'
+- scrollUntilVisible:
+    element:
+      id: 'pay-button'
+- tapOn:
+    id: 'pay-button'
+- tapOn:
+    id: 'simulated-pay-button'
+- extendedWaitUntil:
+    visible: 'Paid'
+    timeout: 10000
+- extendedWaitUntil:
+    visible: 'Shipped'
+    timeout: 15000
