@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Pressable, Switch, View } from 'react-native';
 
 import { useThemeColors } from '@/core/theme';
-import { AppText, Button, Screen, TextField } from '@/core/ui';
+import { AppText, Button, HEADER_EDGES, Screen, TextField } from '@/core/ui';
 
 import {
   parseProductFilters,
@@ -70,7 +70,7 @@ export default function FiltersScreen() {
   };
 
   return (
-    <Screen scroll testID="filters-screen" className="gap-6 pt-4">
+    <Screen scroll edges={HEADER_EDGES} testID="filters-screen" className="gap-6 pt-4">
       <View className="gap-3">
         <AppText variant="subtitle">Price (USD)</AppText>
         <View className="flex-row gap-3">

@@ -5,7 +5,7 @@ import { View } from 'react-native';
 import { useRepositories } from '@/core/di';
 import { getErrorPresentation } from '@/core/errors';
 import { queryKeys } from '@/core/query';
-import { AppText, ErrorState, Screen, Skeleton, showToast } from '@/core/ui';
+import { AppText, ErrorState, HEADER_EDGES, Screen, Skeleton, showToast } from '@/core/ui';
 import { useMyProfile } from '@/features/auth/presentation/hooks/use-my-profile';
 import { AddressForm } from '@/features/checkout/presentation/components/address-form';
 
@@ -27,14 +27,14 @@ export default function AddressScreen() {
 
   if (profile.isError) {
     return (
-      <Screen testID="address-screen">
+      <Screen edges={HEADER_EDGES} testID="address-screen">
         <ErrorState error={profile.error} onRetry={() => void profile.refetch()} />
       </Screen>
     );
   }
 
   return (
-    <Screen scroll testID="address-screen" className="pt-2">
+    <Screen scroll edges={HEADER_EDGES} testID="address-screen" className="pt-2">
       {profile.data ? (
         <View className="gap-4">
           {save.isError ? (

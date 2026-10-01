@@ -5,9 +5,9 @@
 
 ## Avance
 
-`███████████░░░` 11/14 fases terminadas (79 %)
+`████████████░░` 12/14 fases terminadas (86 %)
 
-**Fase actual:** Fase 12 · Pulido (⏳ sin empezar). Fase 11 terminada en código; su verificación de punta a punta con Stripe queda pendiente del autor (ver 🙋)
+**Fase actual:** Fase 13 · E2E y CI (⏳ sin empezar). Fase 12 terminada; PaymentSheet real sigue sin verificar (🙋). Fase 11 terminada en código; su verificación de punta a punta con Stripe queda pendiente del autor (ver 🙋)
 **Última actualización:** 2026-09-30
 **Ventana planificada:** semana 2 (5 – 11 oct 2026), compartida con Rutta. `v1.0.0` como tarde el **2026-10-11**.
 
@@ -26,7 +26,7 @@
 | 09 | Pedidos | `feat/fase-09-pedidos` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 10 | Checkout demo | `feat/fase-10-checkout-demo` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 11 | Pagos con Stripe | `feat/fase-11-pagos-stripe` | ✅ Terminada (E2E con Stripe pendiente del autor) | 2026-09-30 | 2026-09-30 | ver historial de `main` |
-| 12 | Pulido | `feat/fase-12-pulido` | ⏳ Pendiente | — | — | — |
+| 12 | Pulido | `feat/fase-12-pulido` | ✅ Terminada | 2026-09-30 | 2026-09-30 | #12 |
 | 13 | E2E y CI | `feat/fase-13-e2e-y-ci` | ⏳ Pendiente | — | — | — |
 | 14 | Lanzamiento | `feat/fase-14-lanzamiento` | ⏳ Pendiente | — | — | — |
 
@@ -79,6 +79,15 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** número o "ver historial de `main`".
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino) o para el autor.
+
+### Fase 12 · Pulido — 2026-09-30
+- **Hecho:** SVG maestros en `assets/source/` + `scripts/generate-app-icons.mjs` (`npm run icons:generate`) -> `icon`, `adaptive-icon`, `monochrome-icon`, `splash-icon` y `splash-icon-dark` (V con remates de toldo, marfil sobre `#BB512B`; en oscuro fondo `#14110F` y símbolo `#E07A52`); `app.json` actualizado (adaptive icon con monocromo, splash claro/oscuro, sin `ios.icon` de plantilla); borrados los recursos de la plantilla (`expo.icon`, `android-icon-*`, logos, `tabIcons`...). `Screen` ya no aplica inset superior bajo cabecera nativa (`HEADER_EDGES` en checkout, pago simulado, filtros y dirección: era el hueco de fases previas). Puntos de la galería inactivos visibles sobre imagen clara. Dirección: `returnKeyType` "next", foco al siguiente campo y último campo envía (`TextField` acepta `inputRef`).
+- **Verificación:** `lint`, `typecheck`, `format:check`, `test --ci` en verde (64 suites, 556 tests); `npx expo-doctor` 21/21. Sin hex fuera de `tokens.ts`, sin `console.log` en `src/`. No se tocó la BD ni las funciones. Emulador `Pixel_10_Pro` (dev build recompilado tras `expo prebuild`, porque `android/` está ignorado y no tomaba el splash nuevo): splash claro y oscuro correctos, ícono nuevo visto en el menú de desarrollo; demo en **oscuro**: catálogo, 2.ª página (30 productos), detalle, galería (swipe y puntos), carrito, checkout (sin hueco bajo la cabecera), hoja de pago simulado, "Simulate failure" -> banner, pago -> pedido Paid -> Shipped (pull to refresh en detalle), Orders, Account, esqueletos con latencia 2,5 s (Orders, Account) en demo; con Supabase local en invitado: Sign in, gate de Orders ("Sign in to see your orders"), gate de checkout -> Sign in con cerrar, OTP por Mailpit, "Max in cart" al llegar al stock, "Live updates paused" y "Checking prices…" con Supabase detenido.
+- **Tabla de estados (emulador):** Catálogo carga ✅ / 2.ª página ✅ · Detalle ✅ · Carrito ✅ (stock máximo, reconciliación en vivo) · Checkout ✅ (fallo simulado, cancelado cubierto antes) · Pago simulado ✅ · Pedidos carga/vacío(live)/invitado/pausado ✅ · Detalle pedido ✅ · Sign in/OTP ✅ · Account carga ✅. Solo en tests (no forzados a mano): `outOfStock` en checkout, `network` en checkout, total cambiado, ErrorState de catálogo, `rateLimited`, "Taking longer than usual", modo claro completo (tokens + test de contraste AA).
+- **Accesibilidad:** ya había etiquetas/roles/estados (51 usos) y áreas >= 44 px (stepper `size-11`); revisado el código, sin cambios adicionales salvo el foco entre campos. Escala de fuente 1,3 **no revisada** en emulador.
+- **PR:** #12.
+- **Decisiones:** ver tabla (prebuild, `HEADER_EDGES`).
+- **Pendientes:** del autor: sigue pendiente la prueba real de PaymentSheet (claves de Stripe; no verificable aquí) y su modo oscuro. Las imágenes de producto no se vieron en live porque `supabase db reset` vació el bucket y `npm run images:upload` (usa la secret key local) no se ejecutó; hay que correrlo tras cada reset (🙋 si se quiere ver). "worker failed to exit gracefully" sigue apareciendo en `npm test` (no se investigó la causa; candidata para fase 13). Esqueletos en oscuro con poco contraste (`surface-muted` sobre fondo), aceptable. Docker: Rutta detenido al empezar y reiniciado al acabar; Vitrina detenido. Emulador limpio (`pm clear`, `adb reverse` eliminado, modo noche restaurado, Metro detenido).
 
 ### Fase 11 · Pagos con Stripe — 2026-09-30
 - **Hecho:** Edge Functions `vitrina-create-payment-intent` (POST, `Authorization` obligatorio, valida forma, reenvía solo `productId`/`quantity`, RPC `create_order` con el JWT del usuario, traducción de errores 409/422/401/500, PaymentIntent con `amount = total_cents` e `idempotencyKey = order.id`, `attach_payment_intent`, 502 si falla Stripe) y `vitrina-stripe-webhook` (firma sobre el cuerpo crudo, evento ajeno ignorado, `stripe_events` idempotente, `mark_order_paid`/`record_payment_failure`, `forgetEvent` + 500 si falla); `_shared/` (`env`, `stripe`, `supabase`, `http`) y `verifyStripeSignature`; `config.toml` (`verify_jwt` true/false); `supabase/functions/.env.example`, `deno.json`; script `functions:check`; `mapFunctionError` + `SupabaseCheckoutRepository` (zod en la respuesta, `reportPaymentResult` no-op) registrado en `createLiveRepositories` y **borrado `unavailable-repositories.ts`**; `StripePaymentProvider` real (`StripeProvider` + `initPaymentSheet`/`presentPaymentSheet`, `Canceled` -> canceled, color `primary` del tema) y `mapStripeError`; mock global de `@stripe/stripe-react-native` en `jest.setup.js`.
@@ -235,6 +244,7 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 | 2026-09-30 | 11 | `@stripe/stripe-react-native` se mockea globalmente en `jest.setup.js` con una fábrica propia (`StripeProvider` que devuelve hijos; `useStripe` con `initPaymentSheet`/`presentPaymentSheet` resolviendo `{}`), no con `stripe-react-native/jest/mock`. Los tests del proveedor la sustituyen localmente. | El mock oficial renderiza un string dentro de `<ROOT>` y rompe RNTL. |
 | 2026-09-30 | 11 | `StripePaymentProvider` usa `env.stripePublishableKey ?? ''` en lugar de comprobar la clave en `PaymentPresenterRoot`. | En live siempre hay clave (`isBackendConfigured` la exige), así que el modo demo forzado ya cubre su ausencia. |
 | 2026-09-30 | 11 | Los errores de `create_order` en la función se traducen por `message` (`outOfStock`, `productUnavailable`, `validation`, `unauthorized`) y el ruido de logs se limita a ids y al `code` de Postgres. `verify_jwt = true` se mantuvo (funciona en local). | Según el archivo de fase. |
+| 2026-09-30 | 12 | Tras cambiar `app.json` (ícono/splash) hay que ejecutar `npx expo prebuild --platform android` antes de `expo run:android`: `android/` está ignorado y `run:android` no regenera recursos. Las pantallas bajo cabecera nativa usan `HEADER_EDGES` (`['left','right']`). | Visto en emulador: el splash seguía siendo el de la plantilla; el inset superior duplicaba la cabecera. |
 
 ## Bloqueos
 

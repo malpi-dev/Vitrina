@@ -7,7 +7,7 @@ import { useRequireSession } from '@/features/auth/presentation/hooks/use-requir
 import { useMyProfile } from '@/features/auth/presentation/hooks/use-my-profile';
 import { useCartItems, useCartTotals } from '@/features/cart/presentation/cart.store';
 import { DemoBanner } from '@/features/demo/presentation/components/demo-banner';
-import { AppText, Button, Card, Price, Screen, Skeleton } from '@/core/ui';
+import { AppText, Button, Card, Price, HEADER_EDGES, Screen, Skeleton } from '@/core/ui';
 import { formatMoney } from '@/core/utils/money';
 
 import { AddressForm } from '../components/address-form';
@@ -148,7 +148,12 @@ export default function CheckoutScreen() {
     }
   }, [state]);
 
-  if (!canRender) return <Screen testID="checkout-screen">{null}</Screen>;
+  if (!canRender)
+    return (
+      <Screen edges={HEADER_EDGES} testID="checkout-screen">
+        {null}
+      </Screen>
+    );
   // After a successful payment the cart is emptied while we navigate to the order: do not bounce.
   if (items.length === 0 && state.kind !== 'succeeded') return <Redirect href="/cart" />;
 
@@ -184,7 +189,13 @@ export default function CheckoutScreen() {
   );
 
   return (
-    <Screen scroll scrollRef={scrollRef} testID="checkout-screen" className="gap-4 pt-2">
+    <Screen
+      scroll
+      scrollRef={scrollRef}
+      edges={HEADER_EDGES}
+      testID="checkout-screen"
+      className="gap-4 pt-2"
+    >
       {mode === 'demo' ? <DemoBanner /> : null}
       <FlowBanner
         state={state}

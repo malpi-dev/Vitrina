@@ -2,6 +2,9 @@ import type { ReactNode, Ref } from 'react';
 import { KeyboardAvoidingView, ScrollView, View } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
+/** Edges for screens under a native header: the header already covers the status bar inset. */
+export const HEADER_EDGES: Edge[] = ['left', 'right'];
+
 interface ScreenProps {
   children: ReactNode;
   scroll?: boolean;
