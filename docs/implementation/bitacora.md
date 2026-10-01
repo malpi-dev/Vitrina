@@ -5,9 +5,9 @@
 
 ## Avance
 
-`████████████▒░` 12/14 fases terminadas (86 %)
+`█████████████░` 13/14 fases terminadas (93 %)
 
-**Fase actual:** Fase 13 · E2E y CI (🚧 en progreso). Fase 12 terminada; PaymentSheet real sigue sin verificar (🙋). Fase 11 terminada en código; su verificación de punta a punta con Stripe queda pendiente del autor (ver 🙋)
+**Fase actual:** Fase 14 · Lanzamiento (⏳ sin empezar). Fase 13 terminada; `live-checkout.yaml` sin ejecutar (🙋 claves de Stripe). Fase 12 terminada; PaymentSheet real sigue sin verificar (🙋). Fase 11 terminada en código; su verificación de punta a punta con Stripe queda pendiente del autor (ver 🙋)
 **Última actualización:** 2026-09-30
 **Ventana planificada:** semana 2 (5 – 11 oct 2026), compartida con Rutta. `v1.0.0` como tarde el **2026-10-11**.
 
@@ -27,7 +27,7 @@
 | 10 | Checkout demo | `feat/fase-10-checkout-demo` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 11 | Pagos con Stripe | `feat/fase-11-pagos-stripe` | ✅ Terminada (E2E con Stripe pendiente del autor) | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 12 | Pulido | `feat/fase-12-pulido` | ✅ Terminada | 2026-09-30 | 2026-09-30 | #12 |
-| 13 | E2E y CI | `feat/fase-13-e2e-y-ci` | 🚧 En progreso | 2026-09-30 | — | — |
+| 13 | E2E y CI | `feat/fase-13-e2e-y-ci` | ✅ Terminada (live-checkout sin ejecutar) | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 14 | Lanzamiento | `feat/fase-14-lanzamiento` | ⏳ Pendiente | — | — | — |
 
 Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
@@ -65,6 +65,7 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 | 1 | 11 | Crear cuenta de Stripe en **modo test** y copiar `pk_test_…` (Publishable) y `sk_test_…` (Secret) de Dashboard → Developers → API keys. | ⏳ Pendiente |
 | 2 | 11 | `stripe login` en la terminal (Stripe CLI 1.52 ya instalada). | ⏳ Pendiente |
 | 3 | 11 | Pegar `pk_test_…` en `.env` (`EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY`, con `EXPO_PUBLIC_FORCE_DEMO=false` y Supabase local `http://10.0.2.2:54321`) y `sk_test_…` en `supabase/functions/.env` (`VITRINA_STRIPE_SECRET_KEY`; partir de `supabase/functions/.env.example`). Nunca en el chat ni en git. | ⏳ Pendiente |
+| 5 | 13 | Ejecutar `.maestro/live-checkout.yaml` (receta en README > Testing y cabecera del YAML) tras completar los pendientes 1-3: requiere Supabase local, `functions serve`, `stripe listen` y una build con `pk_test_…` real. Si Maestro no escribe en el PaymentSheet nativo, hacer esos pasos a mano y anotar el resultado. Los selectores del PaymentSheet y la alerta de confirmación (`Pay`) están sin verificar. | ⏳ Pendiente |
 | 4 | 11 | Prueba E2E del Paso 7 de la fase 11 (F6 CA1–CA6 + extras), ver receta abajo. Anotar aquí cada resultado. | ⏳ Pendiente |
 
 **Receta E2E (fase 11, paso 7):** (0) detener otros Supabase locales (`docker ps`, `supabase stop --project-id <otro>`) y `supabase start` + `supabase db reset` en Vitrina. (1) Terminal 1: `supabase functions serve --env-file supabase/functions/.env`. (2) Terminal 2: `stripe listen --forward-to http://127.0.0.1:54321/functions/v1/vitrina-stripe-webhook`; copiar el `whsec_…` que imprime a `supabase/functions/.env` (`VITRINA_STRIPE_WEBHOOK_SECRET`) y **reiniciar** la terminal 1. (3) Terminal 3: `npx expo start --dev-client --clear` con el dev build en `Pixel_10_Pro` (`npx expo run:android --no-bundler` si no está instalado; `adb reverse tcp:8081 tcp:8081`). (4) Iniciar sesión como usuario live (OTP por Mailpit `http://127.0.0.1:54324`), añadir 2 productos y probar: CA1 tarjeta `4242 4242 4242 4242` (fecha futura, CVC 123, ZIP 12345) -> carrito vacío y detalle "Confirming payment…" -> Paid en vivo; CA2 `stripe payment_intents retrieve <pi_…>` -> `amount` = `total_cents`; CA3 cerrar el PaymentSheet -> "Payment canceled — your cart is intact", pedido `pending_payment`; CA4 `4000 0000 0000 0002` -> rechazo, reintento posible, `last_payment_error` relleno; CA5 poner stock 0 en Studio a un producto del carrito -> banner con "Update cart"; CA6 `stripe events resend <evt_…>` -> `duplicate`, sin fila nueva en `stripe_events`, `paid_at` igual; extras: cerrar la app antes del webhook y reabrir; `4000 0000 0000 9995`. Si `verify_jwt = true` rechaza el JWT en local (no ocurrió con el stack local probado), poner `verify_jwt = false` en `vitrina-create-payment-intent` y anotarlo. Al terminar: detener functions/listen, borrar nada versionado (`supabase/functions/.env` está ignorado) y restaurar Docker/emulador.
@@ -79,6 +80,13 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** número o "ver historial de `main`".
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino) o para el autor.
+
+### Fase 13 · E2E y CI — 2026-09-30
+- **Hecho:** `.maestro/demo-checkout.yaml` (flujo de la definición §13 sin cambios; los `testID` ya existían) y `.maestro/live-checkout.yaml` + `.maestro/scripts/read-otp.js` (OTP desde Mailpit `/api/v1/message/latest`; sin ejecutar), script `npm run e2e`; job `functions` en `ci.yml` (`denoland/setup-deno@v2`, mismos comandos que `functions:check` incl. `deno fmt --check` y `--config`); `eas.json` (development/preview APK/production) y `.github/workflows/release.yml` (tag `v*`: `check` + `build-and-release` con EAS y `gh release create`), copiado de Agendo cambiando nombres; sección Testing del README con la receta E2E.
+- **Verificación:** `lint`, `typecheck`, `format:check`, `test --ci` (64 suites, 556 tests) y `npm run functions:check` (23 tests Deno) en verde. Build release local: `EXPO_PUBLIC_FORCE_DEMO=false`, Supabase `http://10.0.2.2:59999`, publishable key ficticia y `pk_test_placeholder` por variables de shell (el `.env` no se tocó), `expo prebuild --platform android --clean` + `rm -rf android/app/build/generated/assets` + `expo run:android --variant release --no-bundler` (~4 min la primera vez). **`demo-checkout.yaml` en verde 3 veces seguidas** en `Pixel_10_Pro` (Maestro 2.10.0, Java 17): 39 s, 38 s y 38 s por ejecución. `actionlint` no está instalado: `release.yml` revisado a mano (idéntico al de Agendo salvo nombres) y `prettier --check` OK. Docker no se tocó (Rutta siguió corriendo como al empezar; no se usó Supabase local). Emulador limpio (`pm clear`, `force-stop`, Metro detenido; queda instalada la build release en lugar de la de desarrollo: `expo run:android` la reinstala).
+- **PR:** ver historial de `main`.
+- **Decisiones:** Maestro **no corre en CI**: necesita emulador, es lento/inestable en runners y Agendo tomó la misma decisión (definición §14 lo permite); el `demo-checkout` se ejecuta en local y queda documentado. El job `functions` de CI añade `deno fmt --check` y `--config` (más que el esqueleto de la fase) para que sea idéntico a `npm run functions:check`.
+- **Pendientes:** del autor (tabla 🙋, nº 5): ejecutar `live-checkout.yaml` (necesita claves de Stripe). `release.yml` no se ha ejecutado (no hay tag ni `EXPO_TOKEN`; fase 14). "worker failed to exit gracefully" es **intermitente** (apareció en 1 de 2 ejecuciones completas, 0 en `-i`, 0 al ejecutar cada suite por directorio y cada archivo emparejado con otro): no se aisló una suite concreta; `--detectOpenHandles` se queda colgado. Candidatas: temporizadores reales de `MockStore.startLifecycle`/pantalla de pago simulado en algún test; no bloquea (los 556 tests pasan).
 
 ### Fase 12 · Pulido — 2026-09-30
 - **Hecho:** SVG maestros en `assets/source/` + `scripts/generate-app-icons.mjs` (`npm run icons:generate`) -> `icon`, `adaptive-icon`, `monochrome-icon`, `splash-icon` y `splash-icon-dark` (V con remates de toldo, marfil sobre `#BB512B`; en oscuro fondo `#14110F` y símbolo `#E07A52`); `app.json` actualizado (adaptive icon con monocromo, splash claro/oscuro, sin `ios.icon` de plantilla); borrados los recursos de la plantilla (`expo.icon`, `android-icon-*`, logos, `tabIcons`...). `Screen` ya no aplica inset superior bajo cabecera nativa (`HEADER_EDGES` en checkout, pago simulado, filtros y dirección: era el hueco de fases previas). Puntos de la galería inactivos visibles sobre imagen clara. Dirección: `returnKeyType` "next", foco al siguiente campo y último campo envía (`TextField` acepta `inputRef`).
@@ -245,6 +253,7 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 | 2026-09-30 | 11 | `StripePaymentProvider` usa `env.stripePublishableKey ?? ''` en lugar de comprobar la clave en `PaymentPresenterRoot`. | En live siempre hay clave (`isBackendConfigured` la exige), así que el modo demo forzado ya cubre su ausencia. |
 | 2026-09-30 | 11 | Los errores de `create_order` en la función se traducen por `message` (`outOfStock`, `productUnavailable`, `validation`, `unauthorized`) y el ruido de logs se limita a ids y al `code` de Postgres. `verify_jwt = true` se mantuvo (funciona en local). | Según el archivo de fase. |
 | 2026-09-30 | 12 | Tras cambiar `app.json` (ícono/splash) hay que ejecutar `npx expo prebuild --platform android` antes de `expo run:android`: `android/` está ignorado y `run:android` no regenera recursos. Las pantallas bajo cabecera nativa usan `HEADER_EDGES` (`['left','right']`). | Visto en emulador: el splash seguía siendo el de la plantilla; el inset superior duplicaba la cabecera. |
+| 2026-09-30 | 13 | Maestro no se ejecuta en CI; `demo-checkout` solo en local sobre build release (receta en README > Testing). El job `functions` replica `functions:check` completo (con `--config` y `deno fmt --check`). | Emulador en CI inestable/lento (igual que Agendo); evita divergencias entre CI y el script local. |
 
 ## Bloqueos
 
