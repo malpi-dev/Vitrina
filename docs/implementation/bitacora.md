@@ -5,9 +5,9 @@
 
 ## Avance
 
-`████████████░░` 12/14 fases terminadas (86 %)
+`████████████▒░` 12/14 fases terminadas (86 %)
 
-**Fase actual:** Fase 13 · E2E y CI (⏳ sin empezar). Fase 12 terminada; PaymentSheet real sigue sin verificar (🙋). Fase 11 terminada en código; su verificación de punta a punta con Stripe queda pendiente del autor (ver 🙋)
+**Fase actual:** Fase 13 · E2E y CI (🚧 en progreso). Fase 12 terminada; PaymentSheet real sigue sin verificar (🙋). Fase 11 terminada en código; su verificación de punta a punta con Stripe queda pendiente del autor (ver 🙋)
 **Última actualización:** 2026-09-30
 **Ventana planificada:** semana 2 (5 – 11 oct 2026), compartida con Rutta. `v1.0.0` como tarde el **2026-10-11**.
 
@@ -27,7 +27,7 @@
 | 10 | Checkout demo | `feat/fase-10-checkout-demo` | ✅ Terminada | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 11 | Pagos con Stripe | `feat/fase-11-pagos-stripe` | ✅ Terminada (E2E con Stripe pendiente del autor) | 2026-09-30 | 2026-09-30 | ver historial de `main` |
 | 12 | Pulido | `feat/fase-12-pulido` | ✅ Terminada | 2026-09-30 | 2026-09-30 | #12 |
-| 13 | E2E y CI | `feat/fase-13-e2e-y-ci` | ⏳ Pendiente | — | — | — |
+| 13 | E2E y CI | `feat/fase-13-e2e-y-ci` | 🚧 En progreso | 2026-09-30 | — | — |
 | 14 | Lanzamiento | `feat/fase-14-lanzamiento` | ⏳ Pendiente | — | — | — |
 
 Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
