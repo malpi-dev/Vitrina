@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 
 import { useIsDemo } from '@/core/session';
-import { AppText, Button, Card, Price, Screen } from '@/core/ui';
+import { AppText, Button, Card, Price, HEADER_EDGES, Screen } from '@/core/ui';
 
 import { useSimulatedPaymentStore } from '../payment/simulated-payment.store';
 
@@ -52,7 +52,7 @@ export default function SimulatedPaymentScreen() {
   };
 
   return (
-    <Screen testID="simulated-payment-screen" className="gap-5 pt-4">
+    <Screen edges={HEADER_EDGES} testID="simulated-payment-screen" className="gap-5 pt-4">
       <View className="rounded-xl border border-border bg-surface-muted px-4 py-3">
         <AppText variant="label" testID="simulated-payment-notice">
           Demo mode — no real charge
