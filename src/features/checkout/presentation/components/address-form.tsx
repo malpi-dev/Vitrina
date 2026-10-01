@@ -1,8 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { Controller, useForm, type Path } from 'react-hook-form';
 import type { TextInputProps } from 'react-native';
-import { View } from 'react-native';
+import { TextInput, View } from 'react-native';
 import type { z } from 'zod';
 
 import { Button, TextField } from '@/core/ui';
@@ -90,9 +90,12 @@ export function AddressForm({
     },
   });
 
+  const inputs = useRef<(TextInput | null)[]>([]);
+  const submit = handleSubmit(onSubmit);
+
   return (
     <View className="gap-4">
-      {FIELDS.map(({ name, label, testID, props }) => (
+      {FIELDS.map(({ name, label, testID, props }, index) => (
         <Controller
           key={name}
           control={control}
@@ -105,18 +108,22 @@ export function AddressForm({
               onChangeText={field.onChange}
               onBlur={field.onBlur}
               error={fieldState.error?.message}
+              inputRef={(node) => {
+                inputs.current[index] = node;
+              }}
+              // "Next" moves to the following field and keeps the keyboard open; the last one submits.
+              returnKeyType={index === FIELDS.length - 1 ? 'done' : 'next'}
+              submitBehavior={index === FIELDS.length - 1 ? 'blurAndSubmit' : 'submit'}
+              onSubmitEditing={() =>
+                index === FIELDS.length - 1 ? void submit() : inputs.current[index + 1]?.focus()
+              }
               {...props}
             />
           )}
         />
       ))}
       {footer}
-      <Button
-        title={submitLabel}
-        testID={submitTestID}
-        loading={loading}
-        onPress={handleSubmit(onSubmit)}
-      />
+      <Button title={submitLabel} testID={submitTestID} loading={loading} onPress={submit} />
     </View>
   );
 }
